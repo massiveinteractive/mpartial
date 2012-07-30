@@ -1,0 +1,29 @@
+
+-main Main
+-swf build/main.swf
+-swf-version 10
+-swf-header 1024:769:60:FFFFFF
+-lib mpartial
+-cp src
+-debug
+--macro mpartial.PartialsMacro.configure(['flash'], true)
+
+--next
+
+-main Main
+-js build/main.js
+-lib mpartial
+-cp src
+-debug
+-D web
+--macro mpartial.PartialsMacro.configure(['js'], true)
+--next
+
+-main Main
+-neko build/main.n
+-lib mpartial
+-cp src
+-debug
+--macro mpartial.PartialsMacro.configure(['neko'], true)
+
+-cmd neko build/main.n

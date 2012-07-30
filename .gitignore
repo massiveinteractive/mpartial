@@ -1,0 +1,8 @@
+bin
+workspace.json
+
+*.js
+*.js.map
+*.swf
+*.n
+gen-partials

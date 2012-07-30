@@ -1,0 +1,37 @@
+
+# -main Main
+# -as3 build/as3
+# -cp ../../../../src
+# -cp src
+# -debug
+# --macro mpartial.PartialsMacro.configure(['foo','bar'], true)
+
+# --next
+
+# -main Main
+# -swf build/main.swf
+# -swf-version 10
+# -swf-header 1024:769:60:FFFFFF
+# -cp ../../../../src
+# -cp src
+# -debug
+# --macro mpartial.PartialsMacro.configure(['foo','bar'], true)
+
+# --next
+
+# -main Main
+# -js build/main.js
+# -cp ../../../../src
+# -cp src
+# -debug
+# --macro mpartial.PartialsMacro.configure(['foo','bar'], true)
+
+# --next
+
+-main Main
+-neko main.n
+-lib mpartial
+-cp src
+-debug
+--macro mpartial.PartialsMacro.configure(['foo','bar'], true)
+-cmd neko main.n

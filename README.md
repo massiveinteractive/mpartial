@@ -3,9 +3,7 @@ MassivePartial
 
 Partial class macro for splitting platform specific implementations of a class across multiple files.
 
-
 This is usefull when sharing a common API across multiple platform implementations without needing to either a)repeat/copy logic between duplicate classes, or b)sub class platform specific variants.
-
 
 ### Benefits:
 
@@ -17,7 +15,6 @@ This is usefull when sharing a common API across multiple platform implementatio
 
 - partials can be abused if used to arbitrarily separate parts of a class's code across multiple files
 
-
 ### Known Limitations
 
 - cannot use 'using' in partial implementations
@@ -26,6 +23,7 @@ This is usefull when sharing a common API across multiple platform implementatio
 Getting Started
 ----------
 
+You can download example usage of mpartial [here](https://github.com/downloads/massiveinteractive/mpartial/examples.zip).
 
 1. Implement the `mpartial.Partial` interface on the base class
 

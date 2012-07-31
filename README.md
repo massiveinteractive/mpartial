@@ -1,15 +1,20 @@
 MassivePartial
 ============
 
-Partial class macro for splitting platform specific implementations of a class across multiple files.
 
-This is usefull when sharing a common API across multiple platform implementations without needing to either a)repeat/copy logic between duplicate classes, or b)sub class platform specific variants.
+It is a Haxe macro utility for managing multiple platform implementations (e.g js, flash, neko) of a class within separate files.
+ 
+At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
+
 
 ### Benefits:
 
-- avoids duplication of common logic or segmentation of logic across multpile classes/inheritance
-- clearly organize platform specific implementations within a code base (rather than repeated conditional flags, or internal classes within the one file)
-- potentially include multiple (and/or cascading) partial implementations defined at compilation time
+- clearer organization of platform specific implementations within a code base (rather than repeated conditional flags, or internal classes within the one file)
+- reduced duplication of common logic across multiple classpaths (like src/std, src/js, src/flash);
+- no unnecessary inheritance just to separate common base logic from platform specific logic (ExampleJS extends ExampleBase)
+- ability to augment classes with multiple or alternate aspects/implementations based on compilation flags
+
+
 
 ### Risks:
 

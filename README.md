@@ -1,4 +1,4 @@
-Partials
+MassivePartial
 ============
 
 Partial class macro for splitting platform specific implementations of a class across multiple files.

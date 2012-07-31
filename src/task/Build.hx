@@ -37,64 +37,42 @@ class Build extends mtask.core.BuildBase
 	{
 		target.name = build.project.id;
 		target.version = build.project.version;
-		target.versionDescription = "Initial release.";
+		target.versionDescription = "Public release candidate.";
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.license.organization = "Massive Interactive";
 		target.username = "massive";
 		target.description = "Partial macros.";
 		
+		target.addTag("macro");
 		target.addTag("cross");
 		target.addTag("utility");
 		target.addTag("massive");
 
-		target.addDependency("msys", "1.0.0");
+		// target.addDependency("msys", "1.0.0");
+		target.addDependency("mconsole", "1.0.0");
 
 		target.afterCompile = function()
 		{
 			cp("src/lib/*", target.path);
-			// cmd("haxe", ["-cp", "src/lib", "-js", target.path + "/haxedoc.js", 
-			// 	"-xml", target.path + "/haxedoc.xml", "minject.Injector"]);
-			// rm(target.path + "/haxedoc.js");
+			cmd("haxe", ["-cp", "src/lib", "-neko", target.path + "/haxedoc.n", 
+				"-D", "macro", "-lib", "mconsole", "-xml", target.path + "/haxedoc.xml", 
+				"mpartial.PartialsMacro"]);
+			rm(target.path + "/haxedoc.n");
 		}
 	}
 
-	// function exampleHaxe(target:Haxe)
-	// {
-	// 	target.addPath("src/lib");
-	// 	target.addPath("src/example");
-	// 	target.main = "InjectionExample";
-	// }
-
-	// @target function example(target:Directory)
-	// {
-	// 	var exampleJS = new WebJS();
-	// 	exampleHaxe(exampleJS.app);
-	// 	target.addTarget("example-js", exampleJS);
-
-	// 	var exampleSWF = new WebSWF();
-	// 	exampleHaxe(exampleSWF.app);
-	// 	target.addTarget("example-swf", exampleSWF);
-
-	// 	var exampleNeko = new Neko();
-	// 	exampleHaxe(exampleNeko);
-	// 	target.addTarget("example-neko", exampleNeko);
-
-	// 	target.afterBuild = function()
-	// 	{
-	// 		cp("src/example/*", target.path);
-	// 		zip(target.path);
-	// 	}
-	// }
+	@target function examples(target:Directory)
+	{
+		target.afterBuild = function()
+		{
+			cp("src/example/*", target.path);
+			zip(target.path);
+		}
+	}
 
 	@task function release()
 	{
 		require("clean");
-		// require("test");
-		require("build haxelib"/*, "build example"*/);
+		require("build haxelib", "build examples");
 	}
-
-	// @task function test()
-	// {
-	// 	cmd("haxelib", ["run", "munit", "test", "-js", "-as3", "-neko"]);
-	// }
 }

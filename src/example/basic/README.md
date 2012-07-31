@@ -1,19 +1,20 @@
 Partials - Basic Example
 =================
 
-This example is intended to demonstrate how Partials can be used to seperate platform specific implementations of a single class.
+This example is intended to demonstrate how Partials can be used to seperate 
+platform specific implementations of a single class.
 
-In this case, the `Display` contains the common API and the `Display@js`, `Display@flash` and `Display@neko` targets contain platform specific implementations.
-
-
+In this case, the `Display` contains the common API and the `Display_js`, 
+`Display_flash` and `Display_neko` targets contain platform specific 
+implementations.
 
 Auto Configuration
 ---------------
 
-To build using the default partial targets for the current compilation (platform + debug)
+To build using the default partial targets for the current compilation 
+(platform + debug)
 
 	haxe build.hxml
-
 
 Manual Configuration
 ---------------
@@ -30,11 +31,11 @@ The following build manually configures the flash, js and neko targets
 
 	haxe build_manual.hxml
 
-
-
 ### Generated Partial Classes
 
-During the compilation process, PartialsMacro fully expands qualified references within partial implementations.
+During the compilation process, PartialsMacro fully expands qualified references 
+within partial implementations.
 
-By default these classes are removed after compilation. In this example the second paramater on mpartial.PartialsMacro.configure indicates that the classes should not be deleted.
-
+By default these classes are removed after compilation. In this example the 
+second paramater on mpartial.PartialsMacro.configure indicates that the classes 
+should not be deleted.

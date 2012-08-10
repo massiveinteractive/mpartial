@@ -41,15 +41,15 @@ class Build extends mtask.core.BuildBase
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.license.organization = "Massive Interactive";
 		target.username = "massive";
-		target.description = "Partial macros.";
+		target.description = "A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.";
 		
 		target.addTag("macro");
 		target.addTag("cross");
 		target.addTag("utility");
 		target.addTag("massive");
 
-		// target.addDependency("msys", "1.0.0");
-		target.addDependency("mconsole", "1.0.0");
+		// target.addDependency("msys");
+		target.addDependency("mconsole");
 
 		target.afterCompile = function()
 		{

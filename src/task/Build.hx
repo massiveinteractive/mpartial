@@ -37,7 +37,7 @@ class Build extends mtask.core.BuildBase
 	{
 		target.name = build.project.id;
 		target.version = build.project.version;
-		target.versionDescription = "Public release candidate.";
+		target.versionDescription = "Public release candidate, fixed Issue #1 (compiling with Haxe 2.10)";
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.license.organization = "Massive Interactive";
 		target.username = "massive";

@@ -6,7 +6,6 @@ It is a Haxe macro utility for managing multiple platform implementations (e.g j
  
 At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
 
-**WARNING: mpartial does not yey compile against Haxe 2.10 (due to breaking changes in the 2.10 release)**
 
 ### Benefits:
 

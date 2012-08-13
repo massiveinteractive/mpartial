@@ -1,7 +1,6 @@
 mpartial
 ============
 
-
 It is a Haxe macro utility for managing multiple platform implementations (e.g js, flash, neko) of a class within separate files.
  
 At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate

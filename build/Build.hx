@@ -53,8 +53,8 @@ class Build extends mtask.core.BuildBase
 
 		target.afterCompile = function()
 		{
-			cp("src/lib/*", target.path);
-			cmd("haxe", ["-cp", "src/lib", "-neko", target.path + "/haxedoc.n", 
+			cp("src/*", target.path);
+			cmd("haxe", ["-cp", "src", "-neko", target.path + "/haxedoc.n", 
 				"-D", "macro", "-lib", "mconsole", "-xml", target.path + "/haxedoc.xml", 
 				"mpartial.PartialsMacro"]);
 			rm(target.path + "/haxedoc.n");
@@ -65,7 +65,7 @@ class Build extends mtask.core.BuildBase
 	{
 		target.afterBuild = function()
 		{
-			cp("src/example/*", target.path);
+			cp("example/*", target.path);
 			zip(target.path);
 		}
 	}

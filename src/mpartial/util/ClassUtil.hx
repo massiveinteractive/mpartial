@@ -37,8 +37,8 @@ class ClassUtil
 	{
 		var contents = File.read(path);
 		var imports:Array<String> = [];
-		
-		var reg:EReg = ~/^import ([a-z]([A-Za-z0-9\.])+);/;
+
+		var reg:EReg = ~/^import ([a-z]([A-Za-z0-9\.])+);/m;
 
 		while(reg.match(contents))
 		{
@@ -46,7 +46,6 @@ class ClassUtil
 			imports.push(cls);
 			contents = reg.matchedRight();
 		}
-
 		return imports;
 	}
 }

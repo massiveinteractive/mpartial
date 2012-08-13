@@ -6,3 +6,4 @@ workspace.json
 *.swf
 *.n
 gen-partials
+.DS_Store

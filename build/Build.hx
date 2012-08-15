@@ -48,7 +48,7 @@ class Build extends mtask.core.BuildBase
 		target.addTag("utility");
 		target.addTag("massive");
 
-		// target.addDependency("msys");
+		target.addDependency("msys");
 		target.addDependency("mconsole");
 
 		target.afterCompile = function()

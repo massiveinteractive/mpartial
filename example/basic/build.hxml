@@ -22,3 +22,12 @@
 -cp src
 -debug
 -cmd neko build/main.n
+
+--next
+
+-main Main
+-cpp build/main_cpp
+-lib mpartial
+-cp src
+-debug
+-cmd build/main_cpp/Main-debug

@@ -7,3 +7,7 @@ workspace.json
 *.n
 gen-partials
 .DS_Store
+
+/example/basic/build/
+/example/metadata/build/
+.mcover

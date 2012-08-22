@@ -5,3 +5,13 @@
 -debug
 --macro mpartial.PartialsMacro.configure(['foo','bar'], true)
 -cmd neko main.n
+
+--next
+
+-main Main
+-cpp build/main_cpp
+-lib mpartial
+-cp src
+-debug
+--macro mpartial.PartialsMacro.configure(['foo','bar'], true)
+-cmd build/main_cpp/Main-debug

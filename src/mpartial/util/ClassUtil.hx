@@ -22,7 +22,8 @@ SOFTWARE.
 
 package mpartial.util;
 
-#if (neko||cpp||java||cs)
+#if macro
+// #if (neko||cpp||java||cs)
 
 import msys.File;
 

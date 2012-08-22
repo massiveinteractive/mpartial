@@ -1,0 +1,10 @@
+<project name="mpartial" url="http://github.com/massiveinteractive/mpartial" license="MIT">
+	<user name="massive"/>
+	<description>A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.</description>
+	<version name="0.9.1">Public release candidate, fixed Issue #1 (compiling with Haxe 2.10)</version>
+	<depends name="mconsole"/>
+	<tag v="macro"/>
+	<tag v="cross"/>
+	<tag v="utility"/>
+	<tag v="massive"/>
+</project>

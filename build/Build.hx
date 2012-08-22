@@ -73,6 +73,13 @@ class Build extends mtask.core.BuildBase
 	@task function release()
 	{
 		require("clean");
+		require("test");
 		require("build haxelib", "build examples");
+	}
+
+
+	@task function test()
+	{
+		cmd("haxelib", ["run", "munit", "test", "-coverage"]);
 	}
 }

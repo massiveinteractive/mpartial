@@ -48,16 +48,15 @@ class Build extends mtask.core.BuildBase
 		target.addTag("utility");
 		target.addTag("massive");
 
-		target.addDependency("msys");
+		// target.addDependency("msys");
 		target.addDependency("mconsole");
 
 		target.afterCompile = function()
 		{
 			cp("src/*", target.path);
-			cmd("haxe", ["-cp", "src", "-neko", target.path + "/haxedoc.n", 
+			cmd("haxe", ["-cp", "src", "-neko", target.path + "/haxedoc.n", "--no-output",
 				"-D", "macro", "-lib", "mconsole", "-xml", target.path + "/haxedoc.xml", 
 				"mpartial.PartialsMacro"]);
-			rm(target.path + "/haxedoc.n");
 		}
 	}
 

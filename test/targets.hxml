@@ -2,6 +2,7 @@
 -main TestMain
 -lib munit
 -lib hamcrest
+-lib mconsole
 -cp src
 
 -cp test
@@ -14,6 +15,7 @@
 -main TestMain
 -lib munit
 -lib hamcrest
+-lib mconsole
 -cp src
 
 -cp test
@@ -26,6 +28,7 @@
 -main TestMain
 -lib munit
 -lib hamcrest
+-lib mconsole
 -cp src
 
 -cp test
@@ -37,6 +40,7 @@
 -main TestMain
 -lib munit
 -lib hamcrest
+-lib mconsole
 -cp src
 
 -cp test
@@ -48,6 +52,7 @@
 -main TestMain
 -lib munit
 -lib hamcrest
+-lib mconsole
 -cp src
 
 -cp test

@@ -1,12 +1,11 @@
-mpartial
-============
+## Overview
 
 It is a Haxe macro utility for managing multiple platform implementations (e.g js, flash, neko, c++) of a class within separate files.
  
 At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
 
 
-### Benefits:
+**Benefits:**
 
 - clearer organization of platform specific implementations within a code base (rather than repeated conditional flags, or internal classes within the one file)
 - reduced duplication of common logic across multiple classpaths (like src/std, src/js, src/flash);
@@ -15,17 +14,16 @@ At compilation time, the platform specific implementations (i.e. partials) are a
 
 
 
-### Risks:
+**Risks:**
 
 - partials can be abused if used to arbitrarily separate parts of a class's code across multiple files
 
-### Known Limitations
+**Known Limitations:**
 
 - cannot use 'using' in partial implementations
 
 
-Getting Started
-----------
+## Getting Started
 
 You can download example usage of mpartial [here](https://github.com/downloads/massiveinteractive/mpartial/examples.zip).
 
@@ -45,7 +43,6 @@ You can download example usage of mpartial [here](https://github.com/downloads/m
 
 
 ### Compiling Partials
-
 
 
 **Auto Configuration**
@@ -75,8 +72,7 @@ Under the hood the macro generates expanded versions of the partial classes duri
 	--macro mpartial.PartialsMacro.configure([], true)
 
 
-Simple Example
--------
+## Simple Example
 
 This is a simple example of the main API. Several working examples can be found in example/macro/partial. 
 
@@ -137,8 +133,7 @@ Equivalent compiled class:
 
 
 
-Metadata
---------
+## Metadata
 
 By default additional methods and properties are appended the end of the existing code block.
 
@@ -244,8 +239,7 @@ Using this metadata tag on a predefined method in an implementation class will c
 	WARNING: example.Test_Foo:14 Converting method foo to standard haxe inline accesor.
 
 
-How it Works
--------------
+## How it Works
 
 When a Partial class is compiled, the compiler will check for matching `_{target}` implementations and force compile them prior to completing the original class.
 

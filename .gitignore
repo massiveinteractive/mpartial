@@ -1,5 +1,5 @@
-bin
-workspace.json
+/bin
+/.temp
 
 *.js
 *.js.map

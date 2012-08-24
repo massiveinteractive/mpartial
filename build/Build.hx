@@ -35,14 +35,10 @@ class Build extends mtask.core.BuildBase
 
 	@target function haxelib(target:HaxeLib)
 	{
-		target.name = build.project.id;
-		target.version = build.project.version;
-		target.versionDescription = "Public release candidate, fixed Issue #1 (compiling with Haxe 2.10)";
 		target.url = "http://github.com/massiveinteractive/mpartial";
-		target.license.organization = "Massive Interactive";
-		target.username = "massive";
 		target.description = "A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.";
-		
+		target.versionDescription = "Public release candidate, fixed Issue #1 (compiling with Haxe 2.10)";
+
 		target.addTag("macro");
 		target.addTag("cross");
 		target.addTag("utility");

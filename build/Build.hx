@@ -21,10 +21,7 @@ SOFTWARE.
 */
 
 import mtask.target.HaxeLib;
-import mtask.target.Neko;
 import mtask.target.Directory;
-import mtask.target.Web;
-import mtask.target.Haxe;
 
 class Build extends mtask.core.BuildBase
 {
@@ -47,21 +44,18 @@ class Build extends mtask.core.BuildBase
 		// target.addDependency("msys");
 		target.addDependency("mconsole");
 
-		target.afterCompile = function()
+		target.afterCompile = function(path)
 		{
-			cp("src/*", target.path);
-			cmd("haxe", ["-cp", "src", "-neko", target.path + "/haxedoc.n", "--no-output",
-				"-D", "macro", "-lib", "mconsole", "-xml", target.path + "/haxedoc.xml", 
-				"mpartial.PartialsMacro"]);
+			cp("src/*", path);
 		}
 	}
 
-	@target function examples(target:Directory)
+	@target function example(target:Directory)
 	{
-		target.afterBuild = function()
+		target.beforeCompile = function(path)
 		{
-			cp("example/*", target.path);
-			zip(target.path);
+			mkdir(path);
+			cp("example/*", path);
 		}
 	}
 
@@ -69,7 +63,8 @@ class Build extends mtask.core.BuildBase
 	{
 		invoke("clean");
 		invoke("test");
-		invoke("build haxelib", "build examples");
+		invoke("build haxelib");
+		invoke("build example");
 	}
 
 

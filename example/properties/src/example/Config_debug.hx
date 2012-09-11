@@ -28,30 +28,30 @@ class Config_debug
 
 	//change to inline, override value
 
-	@PartialReplace
+	@:partialReplace
 	inline static public var s1:Bool = true;
 
 	//remove inline, override value
 
-	@PartialReplace
+	@:partialReplace
 	static public var s2:Bool = true;
 
-	@PartialReplace
+	@:partialReplace
 	static var s3:Bool = true;
 
-	@PartialReplace
+	@:partialReplace
 	inline static var s4:Bool = true;
 
 	//-------------------------------------------------------------------------- public accessors
 	
 	// set default value
 
-	@PartialReplace
+	@:partialReplace
 	public var a:Bool = true;
 
 	// convert to getter/setter and set default value
 
-	@PartialReplace
+	@:partialReplace
 	public var b(get_b, set_b):Bool = true;
 
 	function get_b():Bool{
@@ -66,7 +66,7 @@ class Config_debug
 
 	// modify getter/setter accessors
 
-	@PartialReplace
+	@:partialReplace
 	public var c(get_c, set_c):Bool;
 
 	function get_c():Bool
@@ -81,7 +81,7 @@ class Config_debug
 
 	// modify getter method
 
-	@PartialReplace
+	@:partialReplace
 	public var d(get_d2, set_d):Bool;
 
 	function get_d2():Bool
@@ -93,13 +93,13 @@ class Config_debug
 
 	//convert to public, inherit existing default value;
 
-	@PartialReplace
+	@:partialReplace
 	public var e:Bool;
 
 
-	//cannot override property marked with @PartialFinal
+	//cannot override property marked with @:partialFinal
 
-	// @PartialReplace
+	// @:partialReplace
 	// var f:Bool = true;
 
 

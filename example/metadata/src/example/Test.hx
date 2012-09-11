@@ -87,13 +87,13 @@ class Test implements mpartial.Partial
 		print(property, 1);
 	}
 
-	@PartialInline
+	@:partialInline
 	function inlineMethod()
 	{
 		print(property, 1);
 	}
 
-	@PartialFinal
+	@:partialFinal
 	function finalMethod()
 	{
 		print(property, 1);

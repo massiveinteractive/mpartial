@@ -26,25 +26,25 @@ class Test_bar
 {
 	var bar:String;
 
-	@PartialAppend
+	@:partialAppend
 	function new()
 	{
 		bar = "bar";
 	}
 
-	@PartialAppend
+	@:partialAppend
 	function appendMethod()
 	{
 		print(bar, 3);
 	}
 
-	@PartialReplace
+	@:partialReplace
 	function overrideMethod()
 	{
     	print(bar,3);
 	}
 
-	@PartialAppend
+	@:partialAppend
 	function addMethod()
 	{
 		print(bar, 3);

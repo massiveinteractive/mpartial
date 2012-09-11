@@ -81,13 +81,11 @@ class PartialImplementationParser extends BaseParser
 	    		}
 	    		case FVar(t, e):
 	    		{
-	    			trace(field.kind, true);
-	    			parent.fields.push(field);
+	    			parseProperty(field);
 	    		}
 	    		case FProp(get,set,t,e):
 	    		{
-	    			trace([get, set, t, e], true);
-	    			parent.fields.push(field);
+	    			parseProperty(field);
 	    		}
 	    	}
         }
@@ -133,6 +131,106 @@ class PartialImplementationParser extends BaseParser
 		}
 		return TPath(typePath);
 	}
+
+	function parseProperty(field:Field)
+	{
+		trace(field.kind, true);
+
+		currentLocation = qualifiedClassName + "." + field.name;
+
+		var prop = new PropertyHelper(field, qualifiedClassName);
+
+		if(parent.properties.exists(field.name))
+		{
+			var parentProp = parent.properties.get(field.name);
+
+			validateProperty(prop, parentProp);
+
+			if(prop.expr == null && parentProp.expr != null)
+			{
+				prop.expr = parentProp.expr;
+			}
+
+			parent.fields.remove(parentProp.field);
+			parent.fields.push(field);
+			parent.properties.set(field.name, prop);
+
+		}
+		else
+		{
+			parent.fields.push(field);
+			parent.properties.set(field.name, prop);
+		}
+		
+	}
+
+	/**
+	Compares the partial property with the base instance to ensure it is a 
+	valid modification.
+	<ul>
+		<li>Compiler error if parent prop is marked as final</li>
+		<li>Compiler error if property has no partial metadata (invalid override)</li>
+		<li>Compiler error if property overriden multiple times in the one file</li>
+		<li>Compiler error if property types do not match</li>
+		<li>Compiler error if converting getter/setter to a simple var</li>
+		<li>Compiler error if adding/removing static accessor</li>
+		<li>Compiler error if changing/removing existing public access</li>
+		<li>Compiler warning if adding/removing inline accessor</li>
+		<li>Compiler warning if adding public accessor</li>
+	</ul>
+
+	*/
+	function validateProperty(prop:PropertyHelper, parentProp:PropertyHelper)
+	{
+		if (parentProp.isFinal)
+		{
+			Context.error("Cannot override @" + PropertyHelper.META_FINAL + " in " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+		
+		if (!prop.hasPartialImplementationMetadata)
+		{
+			Context.error("Property requires partial metadata. Cannot override " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+
+		if (prop.qualifiedClassName == parentProp.qualifiedClassName)
+		{
+			Context.error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+		
+		if(Std.string(prop.type) != Std.string(parentProp.type))
+		{
+			Context.error("Cannot modify property type of " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+		
+		if(parentProp.isFProp && !prop.isFProp)
+		{
+			Context.error("Cannot replace getter/setter with simple var on " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+		
+		if(parentProp.isFProp && !prop.isFProp)
+		{
+			Context.error("Cannot replace getter/setter with simple var on " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+
+		if(parentProp.hasAccess(AStatic) != prop.hasAccess(AStatic))
+		{
+			Context.error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+
+		if(parentProp.hasAccess(APublic) && !prop.hasAccess(APublic))
+		{
+			Context.error("Cannot remove 'public' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+		else if (!parentProp.hasAccess(APublic) && prop.hasAccess(APublic))
+		{
+			Context.warning("Adding 'public' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+
+		if(parentProp.hasAccess(AInline) != prop.hasAccess(AInline))
+		{
+			Context.warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+		}
+	}
 	
 	function parseMethod(field:Field, f:Function)
 	{
@@ -143,7 +241,7 @@ class PartialImplementationParser extends BaseParser
 
 		if (f.expr == null ) return;
 
-		var method = new Method(field, f, qualifiedClassName);
+		var method = new MethodHelper(field, f, qualifiedClassName);
 
 		if (parent.methods.exists(currentMethodName))
 		{
@@ -151,11 +249,11 @@ class PartialImplementationParser extends BaseParser
 
 			if (parentMethod.isFinal)
 			{
-				Context.error("Cannot override @" + Method.META_FINAL + " in " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
+				Context.error("Cannot override @" + MethodHelper.META_FINAL + " in " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
 			}
 			else if (method.isInlined && !parentMethod.isInlined) 
 			{
-				Context.warning("Cannot define @" + Method.META_INLINED + " in a partial implementation of " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
+				Context.warning("Cannot define @" + MethodHelper.META_INLINED + " in a partial implementation of " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
 			}
 			else if (!method.hasPartialImplementationMetadata)
 			{

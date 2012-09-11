@@ -20,17 +20,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import example.Config;
 
 class Main
 {
 	static public function main()
 	{
-		var display = new example.SubDisplay();
-		display.x = 10;
-		display.y = 10;
-		display.width = 200;
-		display.height = 150;
+		// statics
+		trace("s1 " + Config.s1);
+		trace("s2 " + Config.s2);
+		trace("s3 " + untyped Config.s3);
+		trace("s4 " + untyped Config.s4);
 
-		trace(display.debug);
+		//instance
+		var config = new Config();
+		trace("a " + config.a);
+		trace("b " + config.b);
+		trace("c " + config.c);
+		trace("d " + config.d);
+		trace("e " + untyped  config.e);
+		trace("f " + untyped  config.f);
 	}
 }

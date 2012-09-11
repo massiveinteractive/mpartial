@@ -25,6 +25,8 @@ package example;
 
 class Display_debug
 {
+	@PartialReplace
+	public var debug:Bool = true;
 
 	@PartialAppend
 	public function new()

@@ -32,7 +32,7 @@ import haxe.PosInfos;
 Data type representing a method in a class.
 Includes utilities for checking method level partials metadata 
 */
-class Method
+class MethodHelper
 {
 	
 	public inline static var META_APPEND:String = "PartialAppend";
@@ -71,7 +71,7 @@ class Method
 
 		if (isInlined && !isStrictInlined()) 
 		{
-			Context.warning("@" + Method.META_INLINED + " does not support methods with parameters or arguments. " + qualifiedClassName + "." + field.name, f.expr.pos);
+			Context.warning("@" + MethodHelper.META_INLINED + " does not support methods with parameters or arguments. " + qualifiedClassName + "." + field.name, f.expr.pos);
 			
 			field.access.remove(AInline);
 			field.access.push(AInline);

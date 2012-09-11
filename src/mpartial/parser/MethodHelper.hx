@@ -35,11 +35,11 @@ Includes utilities for checking method level partials metadata
 class MethodHelper
 {
 	
-	public inline static var META_APPEND:String = "PartialAppend";
-	public inline static var META_REPLACE:String = "PartialReplace";
-	public inline static var META_FINAL:String = "PartialFinal";
-	public inline static var META_INLINED:String = "PartialInline";
-	public inline static var META_INSERT_AT:String = "PartialInsertAt";
+	public inline static var META_APPEND:String = ":partialAppend";
+	public inline static var META_REPLACE:String = ":partialReplace";
+	public inline static var META_FINAL:String = ":partialFinal";
+	public inline static var META_INLINED:String = ":partialInline";
+	public inline static var META_INSERT_AT:String = ":partialInsertAt";
 
 	public var field:Field;
 	public var f:Function;

@@ -35,8 +35,8 @@ Includes utilities for checking property level partials metadata
 class PropertyHelper
 {
 	
-	public inline static var META_REPLACE:String = "PartialReplace";
-	public inline static var META_FINAL:String = "PartialFinal";
+	public inline static var META_REPLACE:String = ":partialReplace";
+	public inline static var META_FINAL:String = ":partialFinal";
 
 	public var field:Field;
 	public var type(default, null):Null<ComplexType>;

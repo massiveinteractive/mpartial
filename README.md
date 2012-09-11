@@ -97,13 +97,13 @@ Individual platforms provide additional/bespoke implementations
 
 	class Foo_js
 	{
-		@PartialAppend
+		@:partialAppend
 		public function new()
 		{
 			bar = 1;
 		}
 
-		@PartialReplace
+		@:partialReplace
 		function doSomething(value:Int)
 		{
 			bar += value;
@@ -143,7 +143,7 @@ To modify an existing method requires one of the metadata options below:
 
 Appends expressions to the end of the base class
 
-	@PartialAppend
+	@:partialAppend
 	function test()
 	{
 		//appends to end of method expressions
@@ -153,7 +153,7 @@ Appends expressions to the end of the base class
 
 Overrides the entire contents of the method rather than just appending to the end of it 
 
-	@PartialReplace
+	@:partialReplace
 	function test()
 	{
 		//will override expressions all existing expressions
@@ -165,7 +165,7 @@ Overrides the entire contents of the method rather than just appending to the en
 
 Prevents partial classes from modifiying base implementation.
 
-	@PartialFinal
+	@:partialFinal
 	function test()
 	{
 		//cannot be modified/extended by other implementations
@@ -173,7 +173,7 @@ Prevents partial classes from modifiying base implementation.
 
 Modifying this method in an implementation class will cause a compilation error:
 
-	example.Test_Foo:14 Cannot override @PartialFinal in example.Test.run
+	example.Test_Foo:14 Cannot override @:partialFinal in example.Test.run
 			
 
 
@@ -186,7 +186,7 @@ This can be used to append expressions relative to the start or end of a method.
 
 Appending at start of a method (index 0)
 
-	@PartialInsertAt(0)
+	@:partialInsertAt(0)
 	function test()
 	{
 		//will insert expressions at index 0 (before any existing expressions)
@@ -195,7 +195,7 @@ Appending at start of a method (index 0)
 Appending at a specific index (index 1)
 
 
-	@PartialInsertAt(1)
+	@:partialInsertAt(1)
 	function test()
 	{
 		//will insert expressions immediately after the first expression
@@ -203,7 +203,7 @@ Appending at a specific index (index 1)
 
 Appending relative to the end of the method expressions (index -1)
 
-	@PartialInsertAt(-1)
+	@:partialInsertAt(-1)
 	function test()
 	{
 		//will insert expressions immediately before the last expression.
@@ -217,7 +217,7 @@ Appending relative to the end of the method expressions (index -1)
 Similar to Haxe's inline accessor, but litterally injects expressions at the location where the method is called.
  Unlike Haxe's `inline` accessor, this will only inline references within the Partial class.
 
-	@PartialInline
+	@:partialInline
 	function test()
 	{
 		//will insert expressions directly into calling function
@@ -225,7 +225,7 @@ Similar to Haxe's inline accessor, but litterally injects expressions at the loc
 
 **Note:** This feature in not supported by methods with parameters. For example:
 
-	@PartialInline
+	@:partialInline
 	function test(value:Bool)
 	{
 		//cannot insert into calling function because of value parameter
@@ -235,7 +235,7 @@ Similar to Haxe's inline accessor, but litterally injects expressions at the loc
 
 Using this metadata tag on a predefined method in an implementation class will cause a compilation warning, and attempt to convert the method to a traditional haxe `inline` function.
 
-	WARNING: example.Test_Foo:14 Cannot define @PartialInline in a partial implementation of example.Test
+	WARNING: example.Test_Foo:14 Cannot define @:partialInline in a partial implementation of example.Test
 	WARNING: example.Test_Foo:14 Converting method foo to standard haxe inline accesor.
 
 
@@ -248,7 +248,7 @@ Property fields support a subset of partial metadata options:
 
 Overrides the base class property definition.
 
-	@PartialReplace
+	@:partialReplace
 	public var property:String = "foo";
 
 Unlike methods, there are some restrictions on overriding a property to avoid breaking compatibility with other classes using the public API. This prevents properties being changed from public to private, static to instance, etc
@@ -267,7 +267,7 @@ Unlike methods, there are some restrictions on overriding a property to avoid br
 
 Prevents partial classes from modifiying base instance.
 
-	@PartialFinal
+	@:partialFinal
 	public var property:String = "bar";
 
 

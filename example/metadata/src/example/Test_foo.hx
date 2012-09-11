@@ -26,50 +26,50 @@ class Test_foo
 {
 	var foo:String;	
 	
-	@PartialAppend
+	@:partialAppend
 	function new()
 	{
 		foo = "foo";
 	}	
 
-	@PartialAppend
+	@:partialAppend
 	function appendMethod()
 	{
 		print(foo,2);
 	}
 
-	@PartialInsertAt(0)
+	@:partialInsertAt(0)
 	function appendMethodBefore()
 	{
 		print(foo + " 0",2);
 	}
 
-	@PartialInsertAt(1)
+	@:partialInsertAt(1)
 	function appendMethodRelativeToStart()
 	{
 		print(foo + " 1",2);
 	}
 
-	@PartialInsertAt(-1)
+	@:partialInsertAt(-1)
 	function appendMethodRelativeToEnd()
 	{
 		print(foo + " -1",2);
 	}	
 
-	@PartialReplace
+	@:partialReplace
 	function overrideMethod()
 	{
 		print(foo,2);
 	}	
 	
-	@PartialAppend
+	@:partialAppend
 	function inlineMethod()
 	{
 		print(foo,2);
 	}	
 
 	/**
-	would cause compiler error because parent method is marked with @PartialFinal
+	would cause compiler error because parent method is marked with @:partialFinal
 	*/ 
 	// function finalMethod()
 	// {

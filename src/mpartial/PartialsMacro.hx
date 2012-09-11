@@ -34,8 +34,8 @@ import msys.Directory;
 
 class PartialsMacro
 {
-	public static var TEMP_DIR:String = "gen-partials/";
-	public static var SRC_DIR:String = "gen-partials/";
+	public static var TEMP_DIR:String = ".temp/mpartial/";
+	public static var SRC_DIR:String = ".temp/mpartial/";
 
 	static var initialized:Bool = false;
 	static var keepGenerated:Bool = true;

@@ -56,21 +56,17 @@ This includes the current target (js, flash, flash8, neko, php, cpp, java, cs) a
 
 To manually configure which partials to include use the configure macro
 
-
 		--macro mpartial.PartialsMacro.configure(['js', 'foo', 'bar'])
-
 
 The default targets is the equivalent of setting
 
 	--macro mpartial.PartialsMacro.configure([])
-
 
 **Keep Generated Classes**
 
 Under the hood the macro generates expanded versions of the partial classes during compilation. To keep these files around (in a gen_partials directory)
 
 	--macro mpartial.PartialsMacro.configure([], true)
-
 
 ## Simple Example
 
@@ -80,6 +76,8 @@ Base class defines common API
 
 	class Foo implements mpartial.Partial
 	{
+		public var flag:Bool = false;
+
 		var bar:Int;
 
 		public function new()
@@ -97,6 +95,10 @@ Individual platforms provide additional/bespoke implementations
 
 	class Foo_js
 	{
+		@:partialReplace
+		public var flag:Bool = true;
+
+
 		@:partialAppend
 		public function new()
 		{
@@ -116,6 +118,8 @@ Equivalent compiled class:
 
 	class Foo
 	{
+		public var flag:Bool = true;
+
 		var bar:Int;
 
 		public function new()
@@ -135,7 +139,7 @@ Equivalent compiled class:
 
 ## Method Metadata
 
-By default additional methods and properties are appended the end of the existing code block.
+By default additional methods and properties within a partial are appended to the fields of the base class.
 
 To modify an existing method requires one of the metadata options below: 
 
@@ -159,8 +163,6 @@ Overrides the entire contents of the method rather than just appending to the en
 		//will override expressions all existing expressions
 	}
 
-
-
 ### Final
 
 Prevents partial classes from modifiying base implementation.
@@ -174,8 +176,6 @@ Prevents partial classes from modifiying base implementation.
 Modifying this method in an implementation class will cause a compilation error:
 
 	example.Test_Foo:14 Cannot override @:partialFinal in example.Test.run
-			
-
 
 
 ### InsertAt
@@ -210,11 +210,9 @@ Appending relative to the end of the method expressions (index -1)
 		//this is useful for customising logic in a getter/setter prior to returning the value;
 	}
 
-
-
 ### Inline
 
-Similar to Haxe's inline accessor, but litterally injects expressions at the location where the method is called.
+Similar to Haxe's inline accessor, but injects expressions directly at the location where the method is called.
  Unlike Haxe's `inline` accessor, this will only inline references within the Partial class.
 
 	@:partialInline
@@ -241,8 +239,7 @@ Using this metadata tag on a predefined method in an implementation class will c
 
 ## Property Metadata
 
-Property fields support a subset of partial metadata options:
-
+Property fields support a subset of the @:partial metadata options:
 
 ### Replace
 
@@ -265,7 +262,7 @@ Unlike methods, there are some restrictions on overriding a property to avoid br
 
 ### Final
 
-Prevents partial classes from modifiying base instance.
+Prevents partial classes from modifiying the original property field.
 
 	@:partialFinal
 	public var property:String = "bar";
@@ -279,7 +276,7 @@ If no matching `_{target}` files are found, then the class is compiled as normal
 
 Due to limitations of the Haxe macro API, each `_{target}` implementation is copied and updated so that all type references (class, enum, typedef) originating from import statements can be converted to fully qualified paths.
 
-These generated classes follow the pattern `{ClassName}_{target}_generated` and stored in a gen_partials directory in the current working directory.
+These generated classes follow the pattern `{ClassName}_{target}_generated` and stored in a `.temp/mpartial` directory in the current project directory.
 
 To keep these generated files post compilation
 

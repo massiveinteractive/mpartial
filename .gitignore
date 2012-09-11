@@ -12,3 +12,4 @@ gen-partials
 /example/metadata/build/
 .mcover
 /example/properties/build/
+.temp

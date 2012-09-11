@@ -39,3 +39,5 @@ within partial implementations.
 By default these classes are removed after compilation. In this example the 
 second paramater on mpartial.PartialsMacro.configure indicates that the classes 
 should not be deleted.
+
+These files can be located in `.temp/mpartial`.

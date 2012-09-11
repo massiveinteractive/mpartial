@@ -34,7 +34,7 @@ class Build extends mtask.core.BuildBase
 	{
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.description = "A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.";
-		target.versionDescription = "Public release candidate, fixed Issue #1 (compiling with Haxe 2.10)";
+		target.versionDescription = "1.0 Release. Changed metadata names from @Partial* to @:partial*. Added @:partialReplace and @:partialFinal for property fields (see readme for rules).";
 
 		target.addTag("macro");
 		target.addTag("cross");
@@ -44,7 +44,7 @@ class Build extends mtask.core.BuildBase
 		// target.addDependency("msys");
 		target.addDependency("mconsole");
 
-		target.afterCompile = function(path)
+		target.beforeCompile = function(path)
 		{
 			cp("src/*", path);
 		}
@@ -56,6 +56,14 @@ class Build extends mtask.core.BuildBase
 		{
 			mkdir(path);
 			cp("example/*", path);
+			rm(path + "/basic/build");
+			rm(path + "/metadata/build");
+			rm(path + "/properties/build");
+
+			mkdir(path + "/basic/build");
+			mkdir(path + "/metadata/build");
+			mkdir(path + "/properties/build");
+				
 		}
 	}
 
@@ -65,6 +73,11 @@ class Build extends mtask.core.BuildBase
 		invoke("test");
 		invoke("build haxelib");
 		invoke("build example");
+	}
+
+	@task function sublime()
+	{
+		invoke("debug example");
 	}
 
 

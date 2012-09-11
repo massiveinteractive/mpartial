@@ -133,7 +133,7 @@ Equivalent compiled class:
 
 
 
-## Metadata
+## Method Metadata
 
 By default additional methods and properties are appended the end of the existing code block.
 
@@ -237,6 +237,38 @@ Using this metadata tag on a predefined method in an implementation class will c
 
 	WARNING: example.Test_Foo:14 Cannot define @PartialInline in a partial implementation of example.Test
 	WARNING: example.Test_Foo:14 Converting method foo to standard haxe inline accesor.
+
+
+## Property Metadata
+
+Property fields support a subset of partial metadata options:
+
+
+### Replace
+
+Overrides the base class property definition.
+
+	@PartialReplace
+	public var property:String = "foo";
+
+Unlike methods, there are some restrictions on overriding a property to avoid breaking compatibility with other classes using the public API. This prevents properties being changed from public to private, static to instance, etc
+
+- Compiler error if base propery is marked as final
+- Compiler error if property has no partial metadata (invalid override)
+- Compiler error if property overriden multiple times in the one partial file
+- Compiler error if property types do not match
+- Compiler error if converting getter/setter to a simple var
+- Compiler error if adding/removing static accessor
+- Compiler error if changing/removing existing public access
+- Compiler warning if adding/removing inline accessor
+- Compiler warning if adding public accessor
+
+### Final
+
+Prevents partial classes from modifiying base instance.
+
+	@PartialFinal
+	public var property:String = "bar";
 
 
 ## How it Works

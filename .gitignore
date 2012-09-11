@@ -11,3 +11,4 @@ gen-partials
 /example/basic/build/
 /example/metadata/build/
 .mcover
+/example/properties/build/

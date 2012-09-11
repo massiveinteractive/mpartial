@@ -162,12 +162,12 @@ class PartialsMacro
 	{
 		init();
 
-		trace("@:build");
+		trace("PartialsMacro.build");
 
 		classParser = new PartialClassParser(fields);
 		classParser.build(partialTargets);
 
-		trace("@:build complete", true);
+		trace("PartialsMacro.build complete", true);
 
 		return classParser.fields;
 	}
@@ -177,13 +177,13 @@ class PartialsMacro
 	*/
 	@:macro public static function appendToPartial(expr:Expr):Array<Field>
 	{
-		trace("@:buildPartial");
+		trace("PartialsMacro.buildPartial");
 
 		var implementationParser = new PartialImplementationParser();
 
 		implementationParser.appendTo(classParser);
 
-		trace("@:buildPartial complete", true);
+		trace("PartialsMacro.buildPartial complete", true);
 
 		Compiler.exclude(implementationParser.qualifiedClassName, false);
 		return [];

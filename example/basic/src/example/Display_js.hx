@@ -29,7 +29,7 @@ class Display_js
 {
 	var element:HtmlDom;
 
-	@PartialAppend
+	@:partialAppend
 	public function new()
 	{
 		element = Lib.document.createElement("div");
@@ -38,7 +38,7 @@ class Display_js
 		Lib.document.body.appendChild(element);
 	}
 
-	@PartialAppend
+	@:partialAppend
 	function redraw()
 	{
 		element.style.marginTop = x + "px";

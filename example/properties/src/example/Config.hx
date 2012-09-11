@@ -55,7 +55,7 @@ class Config implements mpartial.Partial
 
 	var e:Bool = true;
 
-	@PartialFinal
+	@:partialFinal
 	var f:Bool = true;
 	
 

@@ -28,14 +28,14 @@ class Display_flash
 {
 	var sprite:Sprite;
 
-	@PartialAppend
+	@:partialAppend
 	public function new()
 	{
 		sprite = new Sprite();
 		flash.Lib.current.addChild(sprite);
 	}
 
-	@PartialAppend
+	@:partialAppend
 	function redraw()
 	{
 		sprite.x = x;

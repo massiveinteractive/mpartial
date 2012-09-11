@@ -25,16 +25,16 @@ package example;
 
 class Display_debug
 {
-	@PartialReplace
+	@:partialReplace
 	public var debug:Bool = true;
 
-	@PartialAppend
+	@:partialAppend
 	public function new()
 	{
 		trace("debug new");
 	}
 
-	@PartialAppend
+	@:partialAppend
 	function redraw()
 	{
 		trace("debug redraw");

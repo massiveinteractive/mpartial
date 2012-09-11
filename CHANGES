@@ -3,6 +3,8 @@
 - Implemented Issue #3 changed metadata names from @Partial* to @:partial* to align with Haxe conventions for build metadata
 - Implemented Issue #2 added support for @:partialOverride and @:partialFinal for property fields
 - added example/properties to demonstrate property partial scenarios
+- added --macro mpartial.PartialsMacro.append(['foo']) to append targets to default ones
+- debug target is now always included in configure/append macro if -debug flag is set
 - changed generated class directory to .temp/mpartial (was /gen-partials)
 - updated mtask build scripts
 

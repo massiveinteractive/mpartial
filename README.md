@@ -54,13 +54,17 @@ This includes the current target (js, flash, flash8, neko, php, cpp, java, cs) a
 
 **Manual Configuration**
 
-To manually configure which partials to include use the configure macro
+To override which partials to include use the configure macro
 
-		--macro mpartial.PartialsMacro.configure(['js', 'foo', 'bar'])
+	--macro mpartial.PartialsMacro.configure(['js', 'foo', 'bar'])
 
 The default targets is the equivalent of setting
 
 	--macro mpartial.PartialsMacro.configure([])
+
+To append additional custom partials after the detault ones use the append macro
+
+	--macro mpartial.PartialsMacro.append(['foo'])
 
 **Keep Generated Classes**
 

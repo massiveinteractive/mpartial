@@ -38,12 +38,24 @@ class PartialsMacro
 	public static var SRC_DIR:String = ".temp/mpartial/";
 
 	static var initialized:Bool = false;
+	static var appendTargets:Bool = false;
 	static var keepGenerated:Bool = true;
-	
+		
+	/**
+	Default targets based on haxe compiler flags
+	*/
 	static var defaultTargets:Array<String> = [];
-	static var partialTargets:Array<String> = [];
+	
+	/**
+	Custom targets defined in compiler macro (configure or append)
+	*/
+	static var customTargets:Array<String> = [];
 	static var classParser:PartialClassParser;
 
+	/**
+	Aggregated targets based on configuration
+	*/
+	static var targets:Array<String> = [];
 
 	/**
 	Configure macro to include specific partial implementations.
@@ -56,6 +68,8 @@ class PartialsMacro
 
 		--macro mpartial.PartialsMacro.configure([], true)
 
+	Note: debug partials are automatically added if the -debug compiler flag is set
+
 	*/
 	public static function configure(targets:Array<String>, ?keepGenerated:Bool=false)
 	{
@@ -64,9 +78,35 @@ class PartialsMacro
 			keepGeneratedClasses();
 		}
 		
-		partialTargets = targets;
+		customTargets = targets;
 		init();
 	}
+
+	/**
+	Appends additional targets to the default set set by Haxe compilation flags
+	
+	Usage:
+		--macro mpartial.PartialsMacro.append(['foo'])
+
+	To keep generated classes
+
+		--macro mpartial.PartialsMacro.configure(['foo'], true)
+
+	Note: debug partials are automatically added if the -debug compiler flag is set
+
+	*/
+	public static function append(targets:Array<String>, ?keepGenerated:Bool=false)
+	{
+		appendTargets = true;
+
+		if (keepGenerated)
+		{
+			keepGeneratedClasses();
+		}
+		customTargets = targets;
+		init();
+	}
+
 
 
 	/**
@@ -91,10 +131,27 @@ class PartialsMacro
 
 		defaultTargets = createDefaultTargets();
 
-		if (partialTargets == null || partialTargets.length == 0)
+		targets = [];
+
+		if(appendTargets == true)
 		{
-			partialTargets = defaultTargets;
+			targets = defaultTargets.concat(customTargets);
 		}
+		else if (customTargets == null || customTargets.length == 0)
+		{
+			targets = defaultTargets;
+		}
+		else
+		{
+			targets = customTargets;
+		}
+
+		if (Context.defined("debug"))
+		{
+			targets.push("debug");
+		}
+
+		//trace("targets: [" + targets.join(",") + "]");
 
 		Directory.create(TEMP_DIR);
 		Directory.create(SRC_DIR);
@@ -148,11 +205,6 @@ class PartialsMacro
 		{
 			targets.push("cs");
 		}
-
-		if (Context.defined("debug"))
-		{
-			targets.push("debug");
-		}
 		
 		return targets;
 		
@@ -165,7 +217,7 @@ class PartialsMacro
 		trace("PartialsMacro.build");
 
 		classParser = new PartialClassParser(fields);
-		classParser.build(partialTargets);
+		classParser.build(targets);
 
 		trace("PartialsMacro.build complete", true);
 

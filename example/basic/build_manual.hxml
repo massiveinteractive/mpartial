@@ -6,7 +6,7 @@
 -lib mpartial
 -cp src
 -debug
---macro mpartial.PartialsMacro.configure(['flash'], true)
+--macro mpartial.PartialsMacro.append(['foo'], true)
 
 --next
 
@@ -16,7 +16,7 @@
 -cp src
 -debug
 -D web
---macro mpartial.PartialsMacro.configure(['js'], true)
+--macro mpartial.PartialsMacro.append(['foo'], true)
 --next
 
 -main Main
@@ -24,6 +24,6 @@
 -lib mpartial
 -cp src
 -debug
---macro mpartial.PartialsMacro.configure(['neko'], true)
+--macro mpartial.PartialsMacro.append(['foo'], true)
 
 -cmd neko build/main.n

@@ -35,7 +35,7 @@ import msys.Directory;
 import mpartial.util.ClassUtil;
 
 /**
-Parsers base Partial class and force compiles additional partial implementations
+Parses base Partial class and forces compilation of additional partial implementations
 */
 class PartialClassParser extends BaseParser
 {
@@ -43,7 +43,8 @@ class PartialClassParser extends BaseParser
 
 	var isPartialClass:Bool;
 
-	public var methods:Hash<Method>;
+	public var methods:Hash<MethodHelper>;
+	public var properties:Hash<PropertyHelper>;
 
 	var exprStack(default, null):Array<Expr>;
 
@@ -77,6 +78,7 @@ class PartialClassParser extends BaseParser
 		}
 
 		methods = new Hash();
+		properties = new Hash();
 
 		if (fields == null) fields = Context.getBuildFields();
 		this.fields = fields;
@@ -119,10 +121,19 @@ class PartialClassParser extends BaseParser
 	    	{
 	    		case FFun(f): 
 	    		{
-	    			var method = new Method(field, f, qualifiedClassName);
+	    			var method = new MethodHelper(field, f, qualifiedClassName);
 					methods.set(field.name, method);
 	    		}
-	    		default: null;
+	    		case FVar(t,e): 
+	    		{
+	    			var property = new PropertyHelper(field, qualifiedClassName);
+					properties.set(field.name, property);
+	    		}
+	    		case FProp(get,set,t, e): 
+	    		{
+	    			var property = new PropertyHelper(field, qualifiedClassName);
+					properties.set(field.name, property);
+	    		}
 	    	}
         }
 	}
@@ -322,7 +333,7 @@ class PartialClassParser extends BaseParser
 		e = parseExpr(e);
 		params = parseExprs(params);
 
-		var method:Method = null;
+		var method:MethodHelper = null;
 
 		switch(e.expr)
 		{

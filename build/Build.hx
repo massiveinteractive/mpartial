@@ -34,11 +34,11 @@ class Build extends mtask.core.BuildBase
 	{
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.description = "A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.";
-		target.versionDescription = "1.0 Release. Changes include <ul>
+		target.versionDescription = "<![CDATA[1.0 Release. Changes include <ul>
 		<li>metadata renamed from @Partial* to @:partial*</li>
 		<li>Added var/property field partials (@:partialReplace and @:partialFinal - see readme for rules)</li>
-		<li>Added additional compiler macro (<code>--macro mpartial.PartialsMacro.append(['foo']</code>) to append custom targets after default ones</li>
-		</ul><br></br>See CHANGES.txt for more info.";
+		<li>Added mpartial.PartialsMacro.append compiler macro for appending custom targets to default ones</li>
+		</ul><br></br>See CHANGES.txt for more info.]]>";
 
 		target.addTag("macro");
 		target.addTag("cross");

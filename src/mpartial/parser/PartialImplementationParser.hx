@@ -40,6 +40,7 @@ class PartialImplementationParser extends BaseParser
 	public function new()
 	{
 		super();
+		trace("qualifiedClassName", qualifiedClassName);
 	}
 
 	/**
@@ -134,8 +135,6 @@ class PartialImplementationParser extends BaseParser
 
 	function parseProperty(field:Field)
 	{
-		trace(field.kind, true);
-
 		currentLocation = qualifiedClassName + "." + field.name;
 
 		var prop = new PropertyHelper(field, qualifiedClassName);

@@ -29,7 +29,6 @@ import haxe.macro.Context;
 import haxe.macro.Compiler;
 import haxe.PosInfos;
 import haxe.macro.Type;
-
 import msys.File;
 import msys.Directory;
 import mpartial.util.ClassUtil;
@@ -52,61 +51,80 @@ class PartialClassParser extends BaseParser
 
 	var imports:Array<String>;
 
-	public function new(?fields:Array<Field>)
+	public function new(?fields:Array<Field>, ?force:Bool=false)
 	{
 		super();
 
-		isPartialClass = false;
+		isPartialClass = force;
+		methods = new Hash();
+		properties = new Hash();
+
+		trace("qualifiedClassName", qualifiedClassName);
 		
 		switch(type)
 		{
 			case TInst(t, params):
 			{
-				var interfaces = t.get().interfaces;
+				var classType = t.get();
 
-				for (i in interfaces)
+				//don't care about other interfaces
+				if(!classType.isInterface && implementsMPartial(classType))
 				{
-					if (i.t.toString() == "mpartial.Partial")
-					{
-						isPartialClass = true;
-						trace("debug", "isPartialClass", currentClassName);
-						break;
-					}
+					isPartialClass = true;
 				}
+					
 			}
 			default: null;
 		}
 
-		methods = new Hash();
-		properties = new Hash();
+		trace("isPartialClass", isPartialClass);
 
 		if (fields == null) fields = Context.getBuildFields();
 		this.fields = fields;
 	}
 
+	/**
+	Check if class type implements mpartial.Partial directly, or via a super interface
+	*/
+	function implementsMPartial(t:ClassType):Bool
+	{
+		for (i in t.interfaces)
+		{
+			if (i.t.toString() == "mpartial.Partial")
+			{
+				return true;
+			}
+			else if(i.t.get().isInterface)
+			{
+				if(implementsMPartial(i.t.get()))
+					return true;
+			}
+		}
+		return false;
+	}
+
 	public function build(targets:Array<String>)
 	{
-		if (isPartialClass)
+		if(!isPartialClass) return;
+
+		prepareFields();
+
+		compilePartialTargets(targets);
+
+		var updateInlineReferences = false;
+
+		for (method in methods)
 		{
-			prepareFields();
-
-			compilePartialTargets(targets);
-
-			var updateInlineReferences = false;
-
-			for (method in methods)
+			if (method.isStrictInlined())
 			{
-				if (method.isStrictInlined())
-				{
-					updateInlineReferences = true;
-					break;
-				}
+				updateInlineReferences = true;
+				break;
 			}
+		}
 
-			if (updateInlineReferences)
-			{
-				parseMethods();
-			}
+		if (updateInlineReferences)
+		{
+			parseMethods();
 		}
 	}
 
@@ -155,8 +173,6 @@ class PartialClassParser extends BaseParser
 		{
 			var dir = File.nativePath(classPath + packagePath);
 
-			trace(">>> " + dir);
-			
 			if ( !File.exists(dir) || !File.isDirectory(dir))
 				continue;
 
@@ -214,7 +230,7 @@ class PartialClassParser extends BaseParser
 		File.write(genFile, contents);
 
 		var qualifiedGenClass = currentPackageName + "." + genClass;
-		Compiler.addMetadata("@:build(mpartial.PartialsMacro.appendToPartial(" + qualifiedClassName + "))", qualifiedGenClass);
+		Compiler.addMetadata("@:build(mpartial.PartialsMacro.buildImplementation(" + qualifiedClassName + "))", qualifiedGenClass);
 		Context.registerModuleDependency(qualifiedClassName, genFile);
 		var a = Context.getModule(qualifiedGenClass);
 	}

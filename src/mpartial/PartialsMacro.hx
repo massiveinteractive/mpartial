@@ -31,6 +31,8 @@ import mpartial.parser.PartialClassParser;
 import mpartial.parser.PartialImplementationParser;
 import msys.File;
 import msys.Directory;
+import haxe.PosInfos;
+
 
 class PartialsMacro
 {
@@ -77,8 +79,15 @@ class PartialsMacro
 		{
 			keepGeneratedClasses();
 		}
+
+		for(target in targets)
+		{
+			if(target != "" && target != null)
+			{
+				customTargets.push(target);
+			}
+		}
 		
-		customTargets = targets;
 		init();
 	}
 
@@ -103,11 +112,16 @@ class PartialsMacro
 		{
 			keepGeneratedClasses();
 		}
-		customTargets = targets;
+		
+		for(target in targets)
+		{
+			if(target != "" && target != null)
+			{
+				customTargets.push(target);
+			}
+		}
 		init();
 	}
-
-
 
 	/**
 	Instruct macro to not deleted generated partial classes after compilation.
@@ -128,6 +142,8 @@ class PartialsMacro
 		if (initialized) return;
 
 		initialized = true;
+
+		Console.addPrinter(new FilePrinter(TEMP_DIR + "mpartial.log"));
 
 		defaultTargets = createDefaultTargets();
 
@@ -151,8 +167,6 @@ class PartialsMacro
 			targets.push("debug");
 		}
 
-		//trace("targets: [" + targets.join(",") + "]");
-
 		Directory.create(TEMP_DIR);
 		Directory.create(SRC_DIR);
 
@@ -160,7 +174,10 @@ class PartialsMacro
 
 		Console.start();
 		Console.removePrinter(Console.defaultPrinter);
-		Console.addPrinter(new mconsole.FilePrinter(TEMP_DIR + "mpartial.log"));
+		
+		trace("default targets", defaultTargets);
+		trace("custom targets", customTargets);
+		trace("final targets", targets);
 
 		haxe.macro.Context.onGenerate(onGenerate);
 
@@ -210,37 +227,51 @@ class PartialsMacro
 		
 	}
 
+	//-------------------------------------------------------------------------- Build macros
+
+	/**
+	Build macro called by mpartial.Partial interface
+	*/
 	@:macro public static function build(?fields:Array<Field>):Array<Field>
+	{
+		return createPartialClass(fields);
+	}
+
+	/**
+	Build macro generated for generated partial implementation classes.
+	Not to be called directly.
+	*/
+	@:macro public static function buildImplementation(expr:Expr):Array<Field>
+	{
+		return appendToPartialClass(classParser);
+	}
+
+
+	/**
+	Parses a class and any associated partial implementations
+	*/
+	public static function createPartialClass(?fields:Array<Field>, ?force:Bool=false):Array<Field>
 	{
 		init();
 
-		trace("PartialsMacro.build");
-
-		classParser = new PartialClassParser(fields);
+		classParser = new PartialClassParser(fields, force);
 		classParser.build(targets);
-
-		trace("PartialsMacro.build complete", true);
 
 		return classParser.fields;
 	}
 
 	/**
-	Not to be called directly
+	Parses the contents of a partial implementation and appends fields to the
+	base class. Removes the stub class from compilation once finished.
 	*/
-	@:macro public static function appendToPartial(expr:Expr):Array<Field>
+	public static function appendToPartialClass(classParser:PartialClassParser):Array<Field>
 	{
-		trace("PartialsMacro.buildPartial");
-
 		var implementationParser = new PartialImplementationParser();
-
 		implementationParser.appendTo(classParser);
-
-		trace("PartialsMacro.buildPartial complete", true);
 
 		Compiler.exclude(implementationParser.qualifiedClassName, false);
 		return [];
 	}
-
 
 	static function onGenerate(types : Array<Type> ) : Void
 	{
@@ -248,8 +279,41 @@ class PartialsMacro
 		{
 			File.remove(SRC_DIR);
 			File.remove(TEMP_DIR);
-			
 		}
+	}
+}
+
+class FilePrinter extends mconsole.FilePrinter
+{
+	var currentClass:String;
+	var currentMethod:String; 
+
+	public function new(path:String)
+	{
+		File.remove(path);
+		super(path);
+	}
+
+	override function printLine(color:mconsole.Printer.ConsoleColor, line:String, pos:PosInfos)
+	{
+		if(StringTools.startsWith(line, "@"))
+		{
+			var a = line.split(".");
+			while(a.length > 2)
+			{
+				a.shift();
+			}
+
+			if(currentClass != a[0])
+			{
+				currentClass = a[0];
+				super.printLine(color,"@" + currentClass, pos);
+			}
+			
+			currentMethod = a[1];
+		}
+		else
+			super.printLine(color," " + currentMethod + line,pos);
 	}
 }
 

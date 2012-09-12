@@ -58,7 +58,6 @@ class BaseParser
 			}
 			default: trace("warning", "unsupported type", type);
 		}
-		trace("debug", "qualifiedClassName", qualifiedClassName);
 	}
 }
 

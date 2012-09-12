@@ -142,6 +142,9 @@ class PartialsMacro
 		if (initialized) return;
 
 		initialized = true;
+		
+		Directory.create(TEMP_DIR);
+		Directory.create(SRC_DIR);
 
 		Console.addPrinter(new FilePrinter(TEMP_DIR + "mpartial.log"));
 
@@ -166,9 +169,6 @@ class PartialsMacro
 		{
 			targets.push("debug");
 		}
-
-		Directory.create(TEMP_DIR);
-		Directory.create(SRC_DIR);
 
 		Compiler.addClassPath(SRC_DIR);
 

@@ -1,3 +1,5 @@
+1.0.1
+- Hot fix for generating temp directory on new projects
 
 1.0.0
 - Implemented Issue #3 changed metadata names from @Partial* to @:partial* to align with Haxe conventions for build metadata

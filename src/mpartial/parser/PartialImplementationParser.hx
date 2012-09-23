@@ -33,14 +33,13 @@ import haxe.PosInfos;
 /**
 Responsible for parsing a a PartialImplementation and appending its fields to the parent PartialClass
 */
-class PartialImplementationParser extends BaseParser
+class PartialImplementationParser extends ClassParser
 {	
 	var parent:PartialClassParser;
 	
 	public function new()
 	{
 		super();
-		trace("qualifiedClassName", qualifiedClassName);
 	}
 
 	/**
@@ -135,9 +134,9 @@ class PartialImplementationParser extends BaseParser
 
 	function parseProperty(field:Field)
 	{
-		currentLocation = qualifiedClassName + "." + field.name;
+		memberName = field.name;
 
-		var prop = new PropertyHelper(field, qualifiedClassName);
+		var prop = new PropertyHelper(field, id);
 
 		if(parent.properties.exists(field.name))
 		{
@@ -183,80 +182,77 @@ class PartialImplementationParser extends BaseParser
 	{
 		if (parentProp.isFinal)
 		{
-			Context.error("Cannot override @" + PropertyHelper.META_FINAL + " in " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.error("Cannot override @" + PropertyHelper.META_FINAL + " in " + parent.location, prop.getPos());
 		}
 		
 		if (!prop.hasPartialImplementationMetadata)
 		{
-			Context.error("Property requires partial metadata. Cannot override " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.error("Property requires partial metadata. Cannot override " + parent.location, prop.getPos());
 		}
 
-		if (prop.qualifiedClassName == parentProp.qualifiedClassName)
+		if (prop.className == parentProp.className)
 		{
-			Context.error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + parent.location, prop.getPos());
 		}
 		
 		if(Std.string(prop.type) != Std.string(parentProp.type))
 		{
-			Context.error("Cannot modify property type of " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			Context.error("Cannot modify property type of " + parent.location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
 		}
 		
 		if(parentProp.isFProp && !prop.isFProp)
 		{
-			Context.error("Cannot replace getter/setter with simple var on " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			Context.error("Cannot replace getter/setter with simple var on " + parent.location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
 		}
 		
 		if(parentProp.isFProp && !prop.isFProp)
 		{
-			Context.error("Cannot replace getter/setter with simple var on " + parent.qualifiedClassName + "." + parentProp.field.name + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			Context.error("Cannot replace getter/setter with simple var on " + parent.location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
 		}
 
 		if(parentProp.hasAccess(AStatic) != prop.hasAccess(AStatic))
 		{
-			Context.error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + parent.location, prop.getPos());
 		}
 
 		if(parentProp.hasAccess(APublic) && !prop.hasAccess(APublic))
 		{
-			Context.error("Cannot remove 'public' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.error("Cannot remove 'public' accessor on " + parent.location, prop.getPos());
 		}
 		else if (!parentProp.hasAccess(APublic) && prop.hasAccess(APublic))
 		{
-			Context.warning("Adding 'public' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.warning("Adding 'public' accessor on " + parent.location, prop.getPos());
 		}
 
 		if(parentProp.hasAccess(AInline) != prop.hasAccess(AInline))
 		{
-			Context.warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + parent.qualifiedClassName + "." + parentProp.field.name, prop.getPos());
+			Context.warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + parent.location, prop.getPos());
 		}
 	}
 	
 	function parseMethod(field:Field, f:Function)
 	{
-		currentMethodName = field.name;
-		currentLocation = qualifiedClassName + "." + currentMethodName;
-
-		trace(" 	" + currentMethodName);
+		memberName = field.name;
 
 		if (f.expr == null ) return;
 
-		var method = new MethodHelper(field, f, qualifiedClassName);
+		var method = new MethodHelper(field, f, id);
 
-		if (parent.methods.exists(currentMethodName))
+		if (parent.methods.exists(memberName))
 		{
-			var parentMethod = parent.methods.get(currentMethodName);
+			var parentMethod = parent.methods.get(memberName);
 
 			if (parentMethod.isFinal)
 			{
-				Context.error("Cannot override @" + MethodHelper.META_FINAL + " in " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
+				Context.error("Cannot override @" + MethodHelper.META_FINAL + " in " + parent.location, method.f.expr.pos);
 			}
 			else if (method.isInlined && !parentMethod.isInlined) 
 			{
-				Context.warning("Cannot define @" + MethodHelper.META_INLINED + " in a partial implementation of " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
+				Context.warning("Cannot define @" + MethodHelper.META_INLINED + " in a partial implementation of " + parent.location, method.f.expr.pos);
 			}
 			else if (!method.hasPartialImplementationMetadata)
 			{
-				Context.error("Method requires partial metadata. Cannot override " + parent.qualifiedClassName + "." + parentMethod.field.name, method.f.expr.pos);
+				Context.error("Method requires partial metadata. Cannot override " + parent.location, method.f.expr.pos);
 			}
 
 			var parentExprs = method.isReplace ? [] : parentMethod.getExprs();
@@ -300,7 +296,7 @@ class PartialImplementationParser extends BaseParser
 		else
 		{
 			parent.fields.push(field);
-			parent.methods.set(currentMethodName, method);
+			parent.methods.set(memberName, method);
 		}
 	}
 }	

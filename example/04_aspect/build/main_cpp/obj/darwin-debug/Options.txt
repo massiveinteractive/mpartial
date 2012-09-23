@@ -1,9 +1,0 @@
-cpp
-haxe_208
-haxe_209
-haxe_210
-mconsole
-mpartial
-sys
-true
-/usr/lib/haxe/lib/hxcpp/2,10/

@@ -36,11 +36,14 @@ import mpartial.util.ClassUtil;
 /**
 Parses base Partial class and forces compilation of additional partial implementations
 */
-class PartialClassParser extends BaseParser
+class PartialClassParser extends ClassParser
 {
 	var targets:Array<String>;
 
 	var isPartialClass:Bool;
+
+
+	var aspects:Array<Type>;
 
 	public var methods:Hash<MethodHelper>;
 	public var properties:Hash<PropertyHelper>;
@@ -59,25 +62,17 @@ class PartialClassParser extends BaseParser
 		methods = new Hash();
 		properties = new Hash();
 
-		trace("qualifiedClassName", qualifiedClassName);
-		
-		switch(type)
-		{
-			case TInst(t, params):
-			{
-				var classType = t.get();
+		aspects = [];
 
-				//don't care about other interfaces
-				if(!classType.isInterface && implementsMPartial(classType))
-				{
-					isPartialClass = true;
-				}
-					
-			}
-			default: null;
+		//don't care about other interfaces
+		if(!classType.isInterface)
+		{
+			isPartialClass = implementsPartial(classType);
+			aspects = getAspectTypes(classType);
 		}
 
 		trace("isPartialClass", isPartialClass);
+		trace("hasAspects", aspects.length > 0);
 
 		if (fields == null) fields = Context.getBuildFields();
 		this.fields = fields;
@@ -86,7 +81,7 @@ class PartialClassParser extends BaseParser
 	/**
 	Check if class type implements mpartial.Partial directly, or via a super interface
 	*/
-	function implementsMPartial(t:ClassType):Bool
+	function implementsPartial(t:ClassType):Bool
 	{
 		for (i in t.interfaces)
 		{
@@ -96,36 +91,67 @@ class PartialClassParser extends BaseParser
 			}
 			else if(i.t.get().isInterface)
 			{
-				if(implementsMPartial(i.t.get()))
+				if(implementsPartial(i.t.get()))
 					return true;
 			}
 		}
 		return false;
 	}
 
+	/**
+	Returns all types defined via the Aspect interface.
+	Checks for Aspect interface and for any other interfaces that extend it.
+
+	@returns array of Type definitions
+	*/
+	function getAspectTypes(t:ClassType):Array<Type>
+	{
+		var aspects:Array<Type> = [];
+
+		for (i in t.interfaces)
+		{
+			if (i.t.toString() == "mpartial.Aspect")
+			{
+				aspects.push(i.params[0]);
+			}
+			else if(i.t.get().isInterface)
+			{
+				aspects = aspects.concat(getAspectTypes(i.t.get()));
+			}
+		}
+		return aspects;
+	}
+
 	public function build(targets:Array<String>)
 	{
-		if(!isPartialClass) return;
+		if(!isPartialClass && aspects.length == 0) return;
 
 		prepareFields();
 
-		compilePartialTargets(targets);
-
-		var updateInlineReferences = false;
-
-		for (method in methods)
+		if(isPartialClass)
 		{
-			if (method.isStrictInlined())
+			compilePartialTargets(targets);
+
+			var updateInlineReferences = false;
+
+			for (method in methods)
 			{
-				updateInlineReferences = true;
-				break;
+				if (method.isStrictInlined())
+				{
+					updateInlineReferences = true;
+					break;
+				}
+			}
+
+			if (updateInlineReferences)
+			{
+				parseMethods();
 			}
 		}
 
-		if (updateInlineReferences)
-		{
-			parseMethods();
-		}
+		if(aspects.length > 0)
+			compileAspects(aspects);
+		
 	}
 
 	/**
@@ -139,23 +165,39 @@ class PartialClassParser extends BaseParser
 	    	{
 	    		case FFun(f): 
 	    		{
-	    			var method = new MethodHelper(field, f, qualifiedClassName);
+	    			var method = new MethodHelper(field, f, id);
 					methods.set(field.name, method);
 	    		}
 	    		case FVar(t,e): 
 	    		{
-	    			var property = new PropertyHelper(field, qualifiedClassName);
+	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
 	    		}
 	    		case FProp(get,set,t, e): 
 	    		{
-	    			var property = new PropertyHelper(field, qualifiedClassName);
+	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
 	    		}
 	    	}
         }
 	}
-	
+
+	function compileAspects(aspects:Array<Type>)
+	{
+		for(type in aspects)
+		{
+			switch(type)
+			{
+				case TInst(t, params):
+				{
+					trace(t.get().name);
+				}
+				default:
+					Context.error("Aspect type not implements [" + type + "]", Context.currentPos());
+			}
+		}
+	}
+
 	/**
 	Forces immediate compilation of additional partial classes based on order of targets.
 	Looks for matching partial target using naming convention Class_target (e.g. Display_js).
@@ -166,7 +208,7 @@ class PartialClassParser extends BaseParser
 	{
 		this.targets = targets;
 
-		var packagePath = currentPackageName.split(".").join("/");
+		var packagePath = packageName.split(".").join("/");
 		if (packagePath != "") packagePath += "/";
 
 		for (classPath in Context.getClassPath())
@@ -178,12 +220,15 @@ class PartialClassParser extends BaseParser
 
 			for (file in Directory.readDirectory(dir))
 			{
+				
 				if (StringTools.endsWith(file, ".hx") )
 				{
 					for (target in targets)
 					{
-						if (StringTools.endsWith(file, currentClassName + "_" + target + ".hx"))
+						if (StringTools.endsWith(file, name + "_" + target + ".hx"))
 						{
+							trace(file, name, target);
+
 							var fullPath = File.nativePath(dir + "/" + file);
 							compilePartialFile(file, fullPath, target);
 							continue;		
@@ -205,7 +250,7 @@ class PartialClassParser extends BaseParser
 	*/
 	function compilePartialFile(file:String, path:String, target:String)
 	{
-		var cls = currentPackageName + "." + file.substr(0, file.length - 3);
+		var cls = packageName + "." + file.substr(0, file.length - 3);
 		if (cls.charAt(0) == ".") cls = cls.substr(1);
 
 		var imports = ClassUtil.getImports(path);
@@ -213,12 +258,12 @@ class PartialClassParser extends BaseParser
 
 		contents = replaceWithFullyQualifiedTypes(contents,imports);
 		
-		var regName:EReg = new EReg("class " + currentClassName + "_" + target, "g");
+		var regName:EReg = new EReg("class " + name + "_" + target, "g");
 
-		var genClass = currentClassName + "_" + target + "_generated";
+		var genClass = name + "_" + target + "_generated";
 		contents = regName.replace(contents, "class " + genClass);
 
-		var packagePath = currentPackageName.split(".").join("/");
+		var packagePath = packageName.split(".").join("/");
 		if (packagePath != "") packagePath += "/";
 
 		var genFile = PartialsMacro.SRC_DIR + packagePath + genClass + ".hx";
@@ -229,9 +274,11 @@ class PartialClassParser extends BaseParser
 		}
 		File.write(genFile, contents);
 
-		var qualifiedGenClass = currentPackageName + "." + genClass;
-		Compiler.addMetadata("@:build(mpartial.PartialsMacro.buildImplementation(" + qualifiedClassName + "))", qualifiedGenClass);
-		Context.registerModuleDependency(qualifiedClassName, genFile);
+		var qualifiedGenClass = packageName + "." + genClass;
+
+		trace("qualifiedGenClass", qualifiedGenClass);
+		Compiler.addMetadata("@:build(mpartial.PartialsMacro.buildImplementation(" + id + "))", qualifiedGenClass);
+		Context.registerModuleDependency(id, genFile);
 		var a = Context.getModule(qualifiedGenClass);
 	}
 
@@ -316,10 +363,7 @@ class PartialClassParser extends BaseParser
 
 		for (method in methods.iterator())
 		{
-			currentMethodName = method.field.name;
-			currentLocation = qualifiedClassName+ "." + currentMethodName;
-
-			trace("currentLocation", currentLocation);
+			memberName = method.field.name;
 
 			functionStack = [method.f];
 			method.f.expr = parseExpr(method.f.expr);

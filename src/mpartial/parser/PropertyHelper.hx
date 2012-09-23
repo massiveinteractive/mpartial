@@ -32,13 +32,12 @@ import haxe.PosInfos;
 Data type representing a FVar field in a class.
 Includes utilities for checking property level partials metadata 
 */
-class PropertyHelper
+class PropertyHelper extends MemberHelper
 {
 	
 	public inline static var META_REPLACE:String = ":partialReplace";
 	public inline static var META_FINAL:String = ":partialFinal";
 
-	public var field:Field;
 	public var type(default, null):Null<ComplexType>;
 	public var expr(default, set_expr):Null<Expr>;
 	public var isFProp(default, null):Bool;
@@ -48,15 +47,12 @@ class PropertyHelper
 
 	public var hasPartialImplementationMetadata(default, null):Bool;
 
-	public var qualifiedClassName(default, null):String;
-
 	var getMethod:String;
 	var setMethod:String;
 
-	public function new(field:Field, qualifiedClassName:String)
+	public function new(field:Field, className:String)
 	{
-		this.field = field;
-		this.qualifiedClassName = qualifiedClassName;
+		super(field, className);
 
 		isFinal = false;
 		isReplace = false;
@@ -141,7 +137,7 @@ class PropertyHelper
 
 	function invalidMetadata(meta:String)
 	{
-		Context.error("Unexpected metadata argument for @" + meta + " at " + field.name, Context.currentPos());
+		Context.error("Unexpected metadata argument for @" + meta + " at " + name, Context.currentPos());
 	}
 
 }	

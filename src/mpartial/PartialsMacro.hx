@@ -246,7 +246,6 @@ class PartialsMacro
 		return appendToPartialClass(classParser);
 	}
 
-
 	/**
 	Parses a class and any associated partial implementations
 	*/
@@ -269,7 +268,7 @@ class PartialsMacro
 		var implementationParser = new PartialImplementationParser();
 		implementationParser.appendTo(classParser);
 
-		Compiler.exclude(implementationParser.qualifiedClassName, false);
+		Compiler.exclude(implementationParser.id, false);
 		return [];
 	}
 
@@ -294,27 +293,27 @@ class FilePrinter extends mconsole.FilePrinter
 		super(path);
 	}
 
-	override function printLine(color:mconsole.Printer.ConsoleColor, line:String, pos:PosInfos)
-	{
-		if(StringTools.startsWith(line, "@"))
-		{
-			var a = line.split(".");
-			while(a.length > 2)
-			{
-				a.shift();
-			}
+	// override function printLine(color:mconsole.Printer.ConsoleColor, line:String, pos:PosInfos)
+	// {
+	// 	if(StringTools.startsWith(line, "@"))
+	// 	{
+	// 		var a = line.split(".");
+	// 		while(a.length > 2)
+	// 		{
+	// 			a.shift();
+	// 		}
 
-			if(currentClass != a[0])
-			{
-				currentClass = a[0];
-				super.printLine(color,"@" + currentClass, pos);
-			}
+	// 		if(currentClass != a[0])
+	// 		{
+	// 			currentClass = a[0];
+	// 			super.printLine(color,"@" + currentClass, pos);
+	// 		}
 			
-			currentMethod = a[1];
-		}
-		else
-			super.printLine(color," " + currentMethod + line,pos);
-	}
+	// 		currentMethod = a[1];
+	// 	}
+	// 	else
+	// 		super.printLine(color," " + currentMethod + line,pos);
+	// }
 }
 
 #end

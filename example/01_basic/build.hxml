@@ -1,0 +1,37 @@
+-main Main
+-swf main.swf
+-swf-version 10
+-swf-header 1024:769:60:FFFFFF
+-lib mpartial
+-cp src
+-debug
+-v
+--next
+
+-main Main
+-js main.js
+-cp src
+-lib mpartial
+-debug
+-D web
+-v
+
+--next
+
+-main Main
+-neko build/main.n
+-lib mpartial
+-cp src
+-debug
+-v
+-cmd neko build/main.n
+
+--next
+
+-main Main
+-cpp build/main_cpp
+-lib mpartial
+-cp src
+-debug
+-v
+-cmd build/main_cpp/Main-debug

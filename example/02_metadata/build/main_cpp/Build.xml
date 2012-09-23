@@ -1,0 +1,54 @@
+<xml>
+<files id="haxe">
+<compilerflag value="-Iinclude"/>
+  <file name="src/haxe/Log.cpp">
+   <depend name="include/haxe/Log.h"/>
+  </file>
+  <file name="src/example/SubTest.cpp">
+   <depend name="include/example/SubTest.h"/>
+   <depend name="include/example/Test.h"/>
+   <depend name="include/mpartial/Partial.h"/>
+  </file>
+  <file name="src/example/Test.cpp">
+   <depend name="include/StringTools.h"/>
+   <depend name="include/example/Test.h"/>
+   <depend name="include/haxe/Log.h"/>
+   <depend name="include/mpartial/Partial.h"/>
+  </file>
+  <file name="src/mpartial/Partial.cpp">
+   <depend name="include/mpartial/Partial.h"/>
+  </file>
+  <file name="src/StringTools.cpp">
+   <depend name="include/StringTools.h"/>
+  </file>
+  <file name="src/Std.cpp">
+   <depend name="include/Std.h"/>
+  </file>
+  <file name="src/Main.cpp">
+   <depend name="include/Main.h"/>
+   <depend name="include/example/SubTest.h"/>
+   <depend name="include/example/Test.h"/>
+   <depend name="include/mpartial/Partial.h"/>
+  </file>
+  <file name="src/__boot__.cpp">
+  </file>
+  <file name="src/__files__.cpp">
+  </file>
+  <file name="src/__resources__.cpp">
+  </file>
+</files>
+<files id="__lib__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__lib__.cpp">
+   <depend name="include/Main.h"/>
+  </file>
+</files>
+<files id="__main__">
+<compilerflag value="-Iinclude"/>
+  <file name="src/__main__.cpp">
+   <depend name="include/Main.h"/>
+  </file>
+</files>
+<set name="HAXE_OUTPUT" value="Main" />
+<include name="${HXCPP}/build-tool/BuildCommon.xml"/>
+</xml>

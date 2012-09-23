@@ -33,6 +33,8 @@ import msys.File;
 import msys.Directory;
 import mpartial.util.ClassUtil;
 
+// using tink.macro.tools.MacroTools;
+
 /**
 Parses base Partial class and forces compilation of additional partial implementations
 */
@@ -351,7 +353,207 @@ class PartialClassParser extends ClassParser
 		return qualifiedTypes;
 	}
 
-	///////////////
+	// ------------------------------------------------------------------------- Append Fields
+
+	/**
+	Appends an array of fields from another type to the current class, potentially
+	replacing or modifying existing fields with the same name
+	*/
+	public function appendFields(fields:Array<Field>, fromId:String)
+	{
+		for (field in fields)
+        {
+        	switch(field.kind)
+	    	{
+	    		case FFun(f):
+	    		{
+	    			appendMethod(field, f,fromId);
+	    		}
+	    		case FVar(t, e):
+	    		{
+	    			appendProperty(field,fromId);
+	    		}
+	    		case FProp(get,set,t,e):
+	    		{
+	    			appendProperty(field,fromId);
+	    		}
+	    	}
+        }
+	}
+
+	/**
+	Appends a property field to the current class.
+	*/
+	function appendProperty(field:Field, fromId:String)
+	{
+		memberName = field.name;
+
+		var prop = new PropertyHelper(field, fromId);
+
+		if(properties.exists(field.name))
+		{
+			var existingProp = properties.get(field.name);
+
+			validateProperty(prop, existingProp);
+
+			if(prop.expr == null && existingProp.expr != null)
+			{
+				prop.expr = existingProp.expr;
+			}
+
+			fields.remove(existingProp.field);
+			fields.push(field);
+			properties.set(field.name, prop);
+
+		}
+		else
+		{
+			fields.push(field);
+			properties.set(field.name, prop);
+		}
+		
+	}
+
+	/**
+	Compares the partial property with the base instance to ensure it is a 
+	valid modification.
+	<ul>
+		<li>Compiler error if existing prop is marked as final</li>
+		<li>Compiler error if property has no partial metadata (invalid override)</li>
+		<li>Compiler error if property overriden multiple times in the one file</li>
+		<li>Compiler error if property types do not match</li>
+		<li>Compiler error if converting getter/setter to a simple var</li>
+		<li>Compiler error if adding/removing static accessor</li>
+		<li>Compiler error if changing/removing existing public access</li>
+		<li>Compiler warning if adding/removing inline accessor</li>
+		<li>Compiler warning if adding public accessor</li>
+	</ul>
+
+	*/
+	function validateProperty(prop:PropertyHelper, existingProp:PropertyHelper)
+	{
+		if (existingProp.isFinal)
+		{
+			Context.error("Cannot override @" + PropertyHelper.META_FINAL + " in " + location, prop.getPos());
+		}
+		
+		if (!prop.hasPartialImplementationMetadata)
+		{
+			Context.error("Property requires partial metadata. Cannot override " + location, prop.getPos());
+		}
+
+		if (prop.className == existingProp.className)
+		{
+			Context.error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, prop.getPos());
+		}
+		
+		if(Std.string(prop.type) != Std.string(existingProp.type))
+		{
+			Context.error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+		
+		if(existingProp.isFProp && !prop.isFProp)
+		{
+			Context.error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+		
+		if(existingProp.isFProp && !prop.isFProp)
+		{
+			Context.error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+		}
+
+		if(existingProp.hasAccess(AStatic) != prop.hasAccess(AStatic))
+		{
+			Context.error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + location, prop.getPos());
+		}
+
+		if(existingProp.hasAccess(APublic) && !prop.hasAccess(APublic))
+		{
+			Context.error("Cannot remove 'public' accessor on " + location, prop.getPos());
+		}
+		else if (!existingProp.hasAccess(APublic) && prop.hasAccess(APublic))
+		{
+			Context.warning("Adding 'public' accessor on " + location, prop.getPos());
+		}
+
+		if(existingProp.hasAccess(AInline) != prop.hasAccess(AInline))
+		{
+			Context.warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + location, prop.getPos());
+		}
+	}
+	
+	function appendMethod(field:Field, f:Function, fromId:String)
+	{
+		memberName = field.name;
+
+		if (f.expr == null ) return;
+
+		var method = new MethodHelper(field, f, fromId);
+
+		if (methods.exists(memberName))
+		{
+			var existingMethod = methods.get(memberName);
+
+			if (existingMethod.isFinal)
+			{
+				Context.error("Cannot override @" + MethodHelper.META_FINAL + " in " + location, method.f.expr.pos);
+			}
+			else if (method.isInlined && !existingMethod.isInlined) 
+			{
+				Context.warning("Cannot define @" + MethodHelper.META_INLINED + " in a partial implementation of " + location, method.f.expr.pos);
+			}
+			else if (!method.hasPartialImplementationMetadata)
+			{
+				Context.error("Method requires partial metadata. Cannot override " + location, method.f.expr.pos);
+			}
+
+			var existingExprs = method.isReplace ? [] : existingMethod.getExprs();
+
+			var targetExprs = method.getExprs();
+
+			if ( method.insertAt == null)
+			{
+				for (expr in targetExprs)
+				{
+					existingExprs.push(expr);
+				}
+			}
+			else
+			{
+				var before = existingExprs.slice(0,  method.insertAt);
+				var after = existingExprs.slice( method.insertAt);
+
+				while(existingExprs.length > 0)
+				{
+					existingExprs.pop();
+				}
+
+				for (expr in before)
+				{
+					existingExprs.push(expr);
+				}
+
+				for (expr in targetExprs)
+				{
+					existingExprs.push(expr);
+				}
+
+				for (expr in after)
+				{
+					existingExprs.push(expr);
+				}
+			}
+			existingMethod.f.expr.expr = EBlock(existingExprs);
+		}
+		else
+		{
+			fields.push(field);
+			methods.set(memberName, method);
+		}
+	}
+
+
+	//-------------------------------------------------------------------------- parse fields
 
 	/**
 	 * loops through all methods

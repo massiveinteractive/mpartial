@@ -37,19 +37,23 @@ Base build parser for a class. Used by PartialClassParser and PartialImplementat
 class ClassParser extends TypeParser
 {
 	public var classType(default, null):ClassType;
+	public var params(default, null):Array<Type>;
 
 	public var memberName(default, set_memberName):String;
 
 	public var fields:Array<Field>;
 
-	public function new()
+	public function new(?type:Type)
 	{
-		super(Context.getLocalType());
+		if(type == null) type = Context.getLocalType();
+		super(type);
 
 		switch(type)
 		{
-			case TInst(t, params): classType = t.get();
-			default: Context.error("Not a classType [" + type + "]", Context.currentPos());
+			case TInst(t, params):
+				classType = t.get();
+				this.params = params;
+			default: error("Not a classType [" + type + "]");
 		}
 
 		if(id == null)
@@ -68,7 +72,6 @@ class ClassParser extends TypeParser
 
 		return value;
 	}
-
 }
 
 #end

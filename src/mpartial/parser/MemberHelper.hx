@@ -23,6 +23,14 @@ class MemberHelper
 		name = field.name;
 		location = className + "." + name;
 	}
+
+	function error(message:Dynamic, ?pos:Position)
+	{
+		if(pos == null)
+			pos = Context.currentPos();
+			
+		Context.error(Std.string(message), pos);
+	}
 }
 
 #end

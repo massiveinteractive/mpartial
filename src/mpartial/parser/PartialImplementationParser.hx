@@ -43,7 +43,8 @@ class PartialImplementationParser extends ClassParser
 	}
 
 	/**
-	Appends/modifies fields in the host (parent) class
+	Appends the fields of the current class to a parent (host)
+	<code>partialClassParser</code>.
 	@param parent 	the class being modified
 	*/
 	public function appendTo(parent:PartialClassParser)

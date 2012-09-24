@@ -123,6 +123,8 @@ class PropertyHelper extends MemberHelper
 
 	function parseMetadata(meta:Metadata)
 	{
+		if(meta == null) return;
+		
 		for (item in meta)
 		{
 			switch(item.name.toLowerCase())
@@ -137,7 +139,7 @@ class PropertyHelper extends MemberHelper
 
 	function invalidMetadata(meta:String)
 	{
-		Context.error("Unexpected metadata argument for @" + meta + " at " + name, Context.currentPos());
+		error("Unexpected metadata argument for @" + meta + " at " + name, Context.currentPos());
 	}
 
 }	

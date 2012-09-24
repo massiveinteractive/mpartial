@@ -41,6 +41,22 @@ class TypeParser
 
 		location = id;
 	}
+
+	function error(message:Dynamic, ?pos:Position)
+	{
+		if(pos == null)
+			pos = Context.currentPos();
+			
+		Context.error(Std.string(message), pos);
+	}
+
+	function warning(message:Dynamic, ?pos:Position)
+	{
+		if(pos == null)
+			pos = Context.currentPos();
+			
+		Context.warning(Std.string(message), pos);
+	}
 }
 
 #end

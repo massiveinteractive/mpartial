@@ -22,11 +22,16 @@ SOFTWARE.
 
 package example;
 
-class Example implements mpartial.Aspect<State>
+class Example implements mpartial.Aspect<State>, implements IState
 {
 	public function new()
 	{
 		
+	}
+
+	public function reset()
+	{
+
 	}
 
 }

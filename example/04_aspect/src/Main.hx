@@ -20,11 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import example.IState;
+
 class Main
 {
 	static public function main()
 	{
-
 		var example = new example.Example();
+
+		Console.assert(example.state == 0, "state not initialized in constructor (expected [0], returned [" + example.state + "]");
+		Console.assert(example.presetState == 1, "presetState value not set (expected [1], returned [" + example.presetState + "]");
+
+		example.state = 10;
+
+		Console.assert(example.state == 10, "state not updated (expected [10], returned [" + example.state + "]");
+	
+		example.reset();
+
+		Console.assert(example.state == 0, "state not reset (expected [0], returned [" + example.state + "]");
+		
+
+		Console.assert(Std.is(example, IState), "example should implement IState");
 	}
 }

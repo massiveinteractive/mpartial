@@ -22,9 +22,11 @@ SOFTWARE.
 
 package example;
 
-class State
+class State implements IState
 {
 	public var state:Int;
+
+	public var presetState:Int = 1;
 
 	public function new()
 	{
@@ -34,6 +36,12 @@ class State
 	public function setState(state:Int)
 	{
 		this.state = state;
+	}
+
+	@:partialAppend
+	public function reset()
+	{
+		state = 0;
 	}
 
 

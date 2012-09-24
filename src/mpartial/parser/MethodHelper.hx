@@ -81,6 +81,7 @@ class MethodHelper extends MemberHelper
 
 	function parseMetadata(meta:Metadata)
 	{
+		if(meta == null) return;
 		for (item in meta)
 		{
 			switch(item.name.toLowerCase())
@@ -123,7 +124,7 @@ class MethodHelper extends MemberHelper
 
 	function invalidMetadata(meta:String)
 	{
-		Context.error("Unexpected metadata argument for @" + meta + " at " + name, Context.currentPos());
+		error("Unexpected metadata argument for @" + meta + " at " + name);
 	}
 
 	public function getExprs():Array<Expr>

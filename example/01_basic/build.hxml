@@ -5,7 +5,6 @@
 -lib mpartial
 -cp src
 -debug
--v
 --next
 
 -main Main
@@ -14,7 +13,6 @@
 -lib mpartial
 -debug
 -D web
--v
 
 --next
 
@@ -23,7 +21,6 @@
 -lib mpartial
 -cp src
 -debug
--v
 -cmd neko build/main.n
 
 --next
@@ -33,5 +30,4 @@
 -lib mpartial
 -cp src
 -debug
--v
 -cmd build/main_cpp/Main-debug

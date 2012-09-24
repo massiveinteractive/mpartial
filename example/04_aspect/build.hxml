@@ -1,22 +1,24 @@
 # -main Main
-# -swf main.swf
+# -swf build/main.swf
 # -swf-version 10
 # -swf-header 1024:769:60:FFFFFF
 # -lib mpartial
 # -cp src
 # --next
 
-# -main Main
-# -js main.js
-# -cp src
-# -lib mpartial
-# -D web
+-main Main
+-js build/main.js
+-cp src
+-lib mpartial
+-lib tink_macros
+-D web
 
-# --next
+--next
 
 -main Main
 -neko build/main.n
 -lib mpartial
+-lib tink_macros
 -cp src
 -cmd neko build/main.n
 

@@ -115,6 +115,7 @@ class PartialClassParser extends ClassParser
 			if (i.t.toString() == "mpartial.Aspect")
 			{
 				aspects.push(i.params[0]);
+				t.interfaces.remove(i);//remove reference to Aspect interface
 			}
 			else if(i.t.get().isInterface)
 			{
@@ -168,6 +169,8 @@ class PartialClassParser extends ClassParser
 	    		case FFun(f): 
 	    		{
 	    			var method = new MethodHelper(field, f, id);
+	    			trace(method.location);
+	    			trace(tink.macro.tools.Printer.print(f.expr));
 					methods.set(field.name, method);
 	    		}
 	    		case FVar(t,e): 
@@ -188,17 +191,53 @@ class PartialClassParser extends ClassParser
 	{
 		for(type in aspects)
 		{
-			switch(type)
-			{
-				case TInst(t, params):
-				{
-					trace(t.get().name);
-				}
-				default:
-					Context.error("Aspect type not implements [" + type + "]", Context.currentPos());
-			}
+			var aspectParser = new AspectClassParser(type);
+			var fields = aspectParser.getFields();
+			appendFields(fields, aspectParser.id);
+
+
+			classType.interfaces = classType.interfaces.concat(aspectParser.classType.interfaces);
+
+			// var get:Void->ClassType = function()
+			// {
+			// 	return classType;
+			// }
+
+			// switch(type)
+			// {
+			// 	case TInst(t, params):
+			// 		t = {get:get, toString:t.toString};
+			// 		type = TInst(t, params);
+			// 	default: null;
+
+			// }
+
+
+			// var ref:Ref<ClassType> = toRef(classType);
+
+			// type = TInst({t:ref, params:params});
 		}
 	}
+
+	static public function toRef<T>(t:T):Ref<T>
+	{
+
+		var ref:Ref<T> =
+		{
+			toString:function()
+			{
+				return Std.string(t);
+			},
+			get:function()
+			{
+				return t;
+			}
+		}
+
+		
+		return ref;
+	}
+
 
 	/**
 	Forces immediate compilation of additional partial classes based on order of targets.
@@ -432,53 +471,56 @@ class PartialClassParser extends ClassParser
 	*/
 	function validateProperty(prop:PropertyHelper, existingProp:PropertyHelper)
 	{
+
+		var pos = prop.getPos();
+
 		if (existingProp.isFinal)
 		{
-			Context.error("Cannot override @" + PropertyHelper.META_FINAL + " in " + location, prop.getPos());
+			error("Cannot override @" + PropertyHelper.META_FINAL + " in " + location, pos);
 		}
 		
 		if (!prop.hasPartialImplementationMetadata)
 		{
-			Context.error("Property requires partial metadata. Cannot override " + location, prop.getPos());
+			error("Property requires partial metadata. Cannot override " + location, pos);
 		}
 
 		if (prop.className == existingProp.className)
 		{
-			Context.error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, prop.getPos());
+			error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, pos);
 		}
 		
 		if(Std.string(prop.type) != Std.string(existingProp.type))
 		{
-			Context.error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, pos);
 		}
 		
 		if(existingProp.isFProp && !prop.isFProp)
 		{
-			Context.error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, pos);
 		}
 		
 		if(existingProp.isFProp && !prop.isFProp)
 		{
-			Context.error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, prop.getPos());
+			error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, pos);
 		}
 
 		if(existingProp.hasAccess(AStatic) != prop.hasAccess(AStatic))
 		{
-			Context.error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + location, prop.getPos());
+			error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + location, pos);
 		}
 
 		if(existingProp.hasAccess(APublic) && !prop.hasAccess(APublic))
 		{
-			Context.error("Cannot remove 'public' accessor on " + location, prop.getPos());
+			error("Cannot remove 'public' accessor on " + location, pos);
 		}
 		else if (!existingProp.hasAccess(APublic) && prop.hasAccess(APublic))
 		{
-			Context.warning("Adding 'public' accessor on " + location, prop.getPos());
+			warning("Adding 'public' accessor on " + location, pos);
 		}
 
 		if(existingProp.hasAccess(AInline) != prop.hasAccess(AInline))
 		{
-			Context.warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + location, prop.getPos());
+			warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + location, pos);
 		}
 	}
 	
@@ -496,7 +538,7 @@ class PartialClassParser extends ClassParser
 
 			if (existingMethod.isFinal)
 			{
-				Context.error("Cannot override @" + MethodHelper.META_FINAL + " in " + location, method.f.expr.pos);
+				error("Cannot override @" + MethodHelper.META_FINAL + " in " + location, method.f.expr.pos);
 			}
 			else if (method.isInlined && !existingMethod.isInlined) 
 			{
@@ -504,7 +546,7 @@ class PartialClassParser extends ClassParser
 			}
 			else if (!method.hasPartialImplementationMetadata)
 			{
-				Context.error("Method requires partial metadata. Cannot override " + location, method.f.expr.pos);
+				error("Method requires partial metadata. Cannot override " + location, method.f.expr.pos);
 			}
 
 			var existingExprs = method.isReplace ? [] : existingMethod.getExprs();

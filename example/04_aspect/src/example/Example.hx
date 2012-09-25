@@ -22,6 +22,12 @@ SOFTWARE.
 
 package example;
 
+/**
+Example is a class that contains a <code>State</code> aspect.
+
+Example also implements IState directly because the compiler cannot copy across the
+interfaces contained in an Aspect.
+*/
 class Example implements mpartial.Aspect<State>, implements IState
 {
 	public function new()
@@ -31,7 +37,7 @@ class Example implements mpartial.Aspect<State>, implements IState
 
 	public function reset()
 	{
-
+		//do something
 	}
 
 }

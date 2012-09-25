@@ -22,6 +22,9 @@ SOFTWARE.
 
 package example;
 
+/**
+State is a standalone class that is used as an <code>Aspect</code> in other classes
+*/
 class State implements IState
 {
 	public var state:Int;

@@ -31,6 +31,17 @@ class Main
 		display.width = 200;
 		display.height = 150;
 
-		trace(display.debug);
+		#if debug
+		Console.assert(display.debug, "display.debug should be true");
+		#else
+		Console.assert(!display.debug, "display.debug should be false");
+		#end
+
+
+		#if js
+		Console.assert(display.element != null, "display.element should not be null in js target");
+		#elseif swf
+		Console.assert(display.sprite != null, "display.sprite should not be null in swf target");
+		#end
 	}
 }

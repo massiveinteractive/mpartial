@@ -26,6 +26,7 @@ class Main
 {
 	static public function main()
 	{
+		trace("Started");
 		var example = new example.Example();
 
 		Console.assert(example.state == 0, "state not initialized in constructor (expected [0], returned [" + example.state + "]");
@@ -39,7 +40,8 @@ class Main
 
 		Console.assert(example.state == 0, "state not reset (expected [0], returned [" + example.state + "]");
 		
-
 		Console.assert(Std.is(example, IState), "example should implement IState");
+
+		trace("Completed");
 	}
 }

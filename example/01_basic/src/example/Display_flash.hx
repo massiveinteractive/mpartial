@@ -26,7 +26,7 @@ import flash.display.Sprite;
 
 class Display_flash
 {
-	var sprite:Sprite;
+	public var sprite:Sprite;
 
 	@:partialAppend
 	public function new()

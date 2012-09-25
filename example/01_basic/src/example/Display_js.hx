@@ -27,7 +27,7 @@ import js.Dom;
 
 class Display_js
 {
-	var element:HtmlDom;
+	public var element:HtmlDom;
 
 	@:partialAppend
 	public function new()

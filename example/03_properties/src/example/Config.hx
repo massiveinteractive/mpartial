@@ -53,10 +53,10 @@ class Config implements mpartial.Partial
 
 	//-------------------------------------------------------------------------- private accessors
 
-	var e:Bool = true;
+	var e:Bool = false;
 
 	@:partialFinal
-	var f:Bool = true;
+	var f:Bool = false;
 	
 
 	public function new()

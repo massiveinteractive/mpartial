@@ -1,9 +1,35 @@
 ## Overview
 
-It is a Haxe macro utility for managing multiple platform implementations (e.g js, flash, neko, c++) of a class within separate files.
+It is a Haxe macro utility for working with partial code and classes.
+
+**Features**
+
+There are two ways to leverage partials:
+
+1. Partial implementation Files
+2. Aspects
+
+The `mpartial.Partial` interface enables managing multiple platform implementations (e.g js, flash, neko, c++) of a class within separate files.
+
+	class Example implements mpartial.Partial
+	{
+		//class that may contain external partial implemplementation files
+	}
  
 At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
 
+	class Example_js
+	{
+		//copies fields into Example at compilation
+	}
+
+
+The `mpartial.Aspect` interface enables a class to augment (copy) the fields of another class
+
+	class ExampleClass implements mpartial.Aspect<AnotherClass>
+	{
+		...
+	}
 
 **Benefits:**
 
@@ -18,16 +44,20 @@ At compilation time, the platform specific implementations (i.e. partials) are a
 
 - partials can be abused if used to arbitrarily separate parts of a class's code across multiple files
 
-**Known Limitations:**
 
-- cannot use 'using' in partial implementations
+**Current Limitations:**
+
+- cannot use 'using' within partial implementations
+- cannot use Aspect<T> with a type <T> that extends another class
 
 
 ## Getting Started
 
 You can download example usage of mpartial [here](https://github.com/downloads/massiveinteractive/mpartial/examples.zip).
 
-1. Implement the `mpartial.Partial` interface on the base class
+### Partial implementation
+
+1. Implement `mpartial.Partial` on the base class
 
 		class Foo implements mpartial.Partial
 		{
@@ -41,6 +71,36 @@ You can download example usage of mpartial [here](https://github.com/downloads/m
 			...
 		}
 
+### Aspects
+
+1. Create your aspect as you would any normal class
+
+	> Note: This needs to be a valid, compilable class
+
+		class Foo
+		{
+			var prop:String;
+
+			function new()
+			{
+				prop = "helloWorld";
+			}
+
+			function setProp(value:String)
+			{
+				prop = value;
+			}
+		}
+
+2. Implement the `mpartial.Aspect` on the target class
+
+		class Bar implements mpartial.Aspect<Foo>
+		{
+			...
+		}
+
+
+
 
 ### Compiling Partials
 
@@ -50,6 +110,9 @@ You can download example usage of mpartial [here](https://github.com/downloads/m
 By default, the PartialsMacro uses the standard compilation flags to determine which partial target(s) to include.
 
 This includes the current target (js, flash, flash8, neko, php, cpp, java, cs) and the debug flag (-debug)
+
+
+> Note: Aspects require no compilation configuration
 
 
 **Manual Configuration**
@@ -72,7 +135,7 @@ Under the hood the macro generates expanded versions of the partial classes duri
 
 	--macro mpartial.PartialsMacro.configure([], true)
 
-## Simple Example
+## Simple Example - Partials
 
 This is a simple example of the main API. Several working examples can be found in example/macro/partial. 
 
@@ -139,6 +202,60 @@ Equivalent compiled class:
 		}
 	}
 
+## Simple Example - Aspect
+
+This is a simple example for using Aspects 
+
+Create an 'aspect' class
+
+	class State
+	{
+		public var state:Int;
+
+		public function new()
+		{
+			state = 0;
+		}
+
+		public function setState(state:Int)
+		{
+			this.state = state;
+		}
+	}
+
+Create a target class that uses the aspect
+
+	class Foo implements mpartial.Aspect<State>
+	{
+		var bar:String;
+
+		public function new()
+		{
+			bar = "hello";
+		}
+	}
+
+
+Equivalent compiled class:
+
+	class Foo
+	{
+		var bar:String;
+
+		public var state:Int;
+
+		public function new()
+		{
+			bar = "hello";
+			state = 0;
+		}
+
+		public function setState(state:Int)
+		{
+			this.state = state;
+		}
+
+	}
 
 
 ## Method Metadata
@@ -146,6 +263,8 @@ Equivalent compiled class:
 By default additional methods and properties within a partial are appended to the fields of the base class.
 
 To modify an existing method requires one of the metadata options below: 
+
+> Note: Metadata can be used in both Partial implementations and Aspects.
 
 ### Append
 
@@ -156,6 +275,8 @@ Appends expressions to the end of the base class
 	{
 		//appends to end of method expressions
 	}
+
+> Note: Aspects will automatically add @:partialAppend to constructor field
 
 ### Replace
 
@@ -245,6 +366,9 @@ Using this metadata tag on a predefined method in an implementation class will c
 
 Property fields support a subset of the @:partial metadata options:
 
+> Note: Metadata can be used in both Partial implementations and Aspects.
+
+
 ### Replace
 
 Overrides the base class property definition.
@@ -274,6 +398,8 @@ Prevents partial classes from modifiying the original property field.
 
 ## How it Works
 
+### Partials
+
 When a Partial class is compiled, the compiler will check for matching `_{target}` implementations and force compile them prior to completing the original class.
 
 If no matching `_{target}` files are found, then the class is compiled as normal.
@@ -289,4 +415,9 @@ To keep these generated files post compilation
 Or call directly
 
 	--macro mpartial.PartialsMacro.keepGeneratedClasses()
+
+### Aspects
+
+During compilation, the fields of the Aspect<T> type <T> are copied into the target classs. All fields are appended using the same rules that apply to Partial implementations.
+
 

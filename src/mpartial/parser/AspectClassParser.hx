@@ -40,12 +40,7 @@ class AspectClassParser extends ClassParser
 
 	public static function getClassFields(c:ClassType):Array<Field>
 	{
-		var fields:Array<Field> = [];
-
-		for(classField in c.fields.get())
-		{
-			fields.push(Macros.getClassField(c, classField));
-		}
+		var fields:Array<Field> = Macros.getClassFields(c);
 
 		var field = getConstructorField(c);
 
@@ -60,10 +55,10 @@ class AspectClassParser extends ClassParser
 		var classField = c.constructor.get();
 		classField.name = "new";
 
-		var field = Macros.getClassField(c, classField);
+		var field = Macros.getClassField(classField);
 
 
-		if(field.meta == null) 
+		if(field.meta == null || field.meta.length == 0) 
 		{
 			field.meta = [
 			{

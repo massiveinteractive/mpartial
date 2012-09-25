@@ -43,6 +43,7 @@ class Build extends mtask.core.BuildBase
 
 		// target.addDependency("msys");
 		target.addDependency("mconsole");
+		target.addDependency("tink_macros");
 
 		target.beforeCompile = function(path)
 		{

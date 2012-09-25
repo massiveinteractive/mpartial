@@ -33,8 +33,6 @@ import msys.File;
 import msys.Directory;
 import mpartial.util.ClassUtil;
 
-// using tink.macro.tools.MacroTools;
-
 /**
 Parses base Partial class and forces compilation of additional partial implementations
 */
@@ -196,7 +194,9 @@ class PartialClassParser extends ClassParser
 			appendFields(fields, aspectParser.id);
 
 
-			classType.interfaces = classType.interfaces.concat(aspectParser.classType.interfaces);
+			//Note: Haxe210 - cannot modify interfaces
+
+			//classType.interfaces = classType.interfaces.concat(aspectParser.classType.interfaces);
 
 			// var get:Void->ClassType = function()
 			// {

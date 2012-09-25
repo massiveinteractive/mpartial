@@ -11,41 +11,111 @@ import haxe.PosInfos;
 
 class Macros
 {
-	public static function getClassField(c:ClassType, classField:ClassField):Field
+	public static function getClassFields(c:ClassType):Array<Field>
 	{
+		if(c.superClass != null)
+				throw "not implemented";
+
 		var fields:Array<Field> = [];
-		var fieldMap = new Hash();
 
-		tink.macro.tools.TypeTools.getClassFields2(c, [classField], fields, fieldMap);
+		for(classField in c.fields.get())
+		{
+			var field = getClassField(classField);
+			
+			fields.push(field);
+		}
 
-		var field = fields[0];
+		return fields;
+	}
 
+	public static function getClassField(field:ClassField):Field
+	{
+		var kind = getFieldType(field);
 
-		//update expr
+		var meta = field.meta.get();
+
+		if(kind == null)
+			throw "FieldType is null. Cannot create field [" + field + "]";
+
+		return {
+			name:field.name,
+			pos:field.pos,
+			kind:kind,
+			access: field.isPublic ? [APublic] : [APrivate],
+			meta:meta
+		}
+	}
+
+	public static function getFieldType(field:ClassField):FieldType
+	{
+		var expr = getFieldExpr(field);
+
 		switch(field.kind)
 		{
-			case FFun(f):
-				f.expr = getFieldExpr(classField);
-				field.kind = FFun(f);
-			case FVar(t, e):
-				var expr = getFieldExpr(classField);
-				field.kind = FVar(t, expr);
-			case FProp(get, set, t, e):
-				var expr = getFieldExpr(classField);
-				field.kind = FProp(get, set, t, expr);
+			case FVar(read, write):
+			{
+				return FProp(getVarAccess(read), getVarAccess(write), toComplexType(field.type), expr);
+			}
+			case FMethod(k):
+			{
+				switch(k)
+				{
+					case MethMacro: null;
+					default: 
+						switch(Context.follow(field.type))
+						{
+							case TFun(args, ret):
+
+								return FFun(
+								{
+									args:convertTFunArgsToFunctionArgs(args),
+									ret: toComplexType(ret),
+									expr:expr,
+									params:[]
+								});
+
+							default: throw "not implemented for type [" + field.type + "]";
+						}
+
+				}
+			}
 		}
 
-		//update metadata
-		var meta = classField.meta.get();
-		if(meta != null && meta.length > 0)
+		return null;
+	}
+
+	static function convertTFunArgsToFunctionArgs(args : Array<{ t : Type, opt : Bool, name : String }>):Array<FunctionArg>
+	{
+		var converted:Array<FunctionArg> = [];
+
+		for(arg in args)
 		{
-			if(field.meta == null)
-				field.meta = meta.concat([]);
-			else
-				field.meta = field.meta.concat(meta);
+			var value = 
+			{
+				value : null, //Null<Expr>
+				type : toComplexType(arg.t), //<ComplexType>
+				opt : arg.opt,
+				name : arg.name
+			}
+
+			converted.push(value);
 		}
 
-		return field;
+		return converted;
+	}
+
+	static function getVarAccess(access:VarAccess):String
+	{
+		return switch (access)
+		{
+			case AccNormal, AccInline: "default";
+			case AccNo: "null";
+			case AccNever: "never";
+			case AccCall(m): m;
+			case AccResolve: throw "not implemented for VarAccess [" + access + "]";
+			case AccRequire(r): throw "not implemented VarAccess [" + access + "]";
+			
+		}		
 	}
 
 	/**
@@ -69,7 +139,7 @@ class Macros
 				{
 					case EFunction(name, f):
 						return f.expr;
-					default: return null;
+					default: throw "not implemented for ExprDef [" + expr.expr + "]";//return null;
 				}
 			}
 			case FVar(read, write):
@@ -77,6 +147,11 @@ class Macros
 				return expr;
 			}
 		}
+	}
+
+	public static function toComplexType(type:Type):ComplexType
+	{
+		return tink.macro.tools.TypeTools.toComplex(type, true);
 	}
 
 }

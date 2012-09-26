@@ -247,6 +247,11 @@ class PartialsMacro
 	}
 
 	/**
+	hash of already parsed classes
+	*/
+	static var partialMap:Hash<Array<Field>> = new Hash();
+
+	/**
 	Parses a class and any associated partial implementations
 	*/
 	public static function createPartialClass(?fields:Array<Field>, ?force:Bool=false):Array<Field>
@@ -254,8 +259,14 @@ class PartialsMacro
 		init();
 
 		classParser = new PartialClassParser(fields, force);
-		classParser.build(targets);
 
+		if(partialMap.exists(classParser.id))
+		{
+			return null;
+		}
+			
+		classParser.build(targets);
+		partialMap.set(classParser.id, classParser.fields);
 		return classParser.fields;
 	}
 

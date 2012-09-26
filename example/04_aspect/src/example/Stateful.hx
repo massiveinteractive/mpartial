@@ -3,7 +3,7 @@ package example;
 /**
 A state inteface implemented by both <code>State</code> and <code>Example</code>
 */
-interface IState
+interface Stateful
 {
 	var state:Int;
 

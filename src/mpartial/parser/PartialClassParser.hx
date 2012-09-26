@@ -42,7 +42,6 @@ class PartialClassParser extends ClassParser
 
 	var isPartialClass:Bool;
 
-
 	var aspects:Array<Type>;
 
 	public var methods:Hash<MethodHelper>;
@@ -72,7 +71,8 @@ class PartialClassParser extends ClassParser
 		}
 
 		trace("isPartialClass", isPartialClass);
-		trace("hasAspects", aspects.length > 0);
+		trace("aspects", aspects);
+
 
 		if (fields == null) fields = Context.getBuildFields();
 		this.fields = fields;
@@ -113,12 +113,13 @@ class PartialClassParser extends ClassParser
 			if (i.t.toString() == "mpartial.Aspect")
 			{
 				aspects.push(i.params[0]);
-				t.interfaces.remove(i);//remove reference to Aspect interface
+				//t.interfaces.remove(i);//remove reference to Aspect interface
 			}
 			else if(i.t.get().isInterface)
 			{
 				aspects = aspects.concat(getAspectTypes(i.t.get()));
 			}
+			
 		}
 		return aspects;
 	}

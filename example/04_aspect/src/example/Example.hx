@@ -25,10 +25,10 @@ package example;
 /**
 Example is a class that contains a <code>State</code> aspect.
 
-Example also implements IState directly because the compiler cannot copy across the
+Example also implements Stateful directly because the compiler cannot copy across the
 interfaces contained in an Aspect.
 */
-class Example implements mpartial.Aspect<State>, implements IState
+class Example implements mpartial.Aspect<State>, implements mpartial.Aspect<Validator>, implements Stateful
 {
 	public function new()
 	{

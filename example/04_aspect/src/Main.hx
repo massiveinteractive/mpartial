@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import example.IState;
+import example.Stateful;
 
 class Main
 {
@@ -40,7 +40,16 @@ class Main
 
 		Console.assert(example.state == 0, "state not reset (expected [0], returned [" + example.state + "]");
 		
-		Console.assert(Std.is(example, IState), "example should implement IState");
+
+		Console.assert(example.invalid == false, "invalid should be [false]");
+		
+		example.invalidate();
+
+		Console.assert(example.invalid == true, "invalid should be [true]");
+
+
+		Console.assert(Std.is(example, Stateful), "example should implement Stateful");
+
 
 		trace("Completed");
 	}

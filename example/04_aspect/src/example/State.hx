@@ -23,7 +23,7 @@ SOFTWARE.
 package example;
 
 /**
-State is a standalone class that is used as an <code>Aspect</code> in other classes
+State is a standalone class that is used as a partial fragment
 */
 class State implements Stateful
 {

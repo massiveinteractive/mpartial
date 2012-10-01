@@ -23,12 +23,15 @@ SOFTWARE.
 package example;
 
 /**
-Example is a class that contains a <code>State</code> aspect.
+Example contains custom mapped partials using the @:partials class metadata.
 
-Example also implements Stateful directly because the compiler cannot copy across the
-interfaces contained in an Aspect.
 */
-class Example implements mpartial.Aspect<State>, implements mpartial.Aspect<Validator>, implements Stateful
+
+
+typedef IntValidator = example.Validator<Int>;
+
+@:partials(State, IntValidator)
+class Example implements mpartial.Partial, implements Stateful
 {
 	public function new()
 	{
@@ -41,3 +44,16 @@ class Example implements mpartial.Aspect<State>, implements mpartial.Aspect<Vali
 	}
 
 }
+
+// @:partials([example.StateImplTest])
+// class ExampleTest implements Partial
+// {
+// 	...
+// }
+
+
+// @:partials([example.StateImplMock])
+// class ExampleMock extends Example
+// {
+
+// }

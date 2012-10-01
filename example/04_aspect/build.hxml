@@ -10,6 +10,7 @@
 -js build/main.js
 -cp src
 -lib mpartial
+-lib tink_macros
 -D web
 
 --next
@@ -17,6 +18,7 @@
 -main Main
 -neko build/main.n
 -lib mpartial
+-lib tink_macros
 -cp src
 -cmd neko build/main.n
 

@@ -1,6 +1,6 @@
 package example;
 
-class Validator
+class Validator<T>
 {
 	public var invalid:Bool = false;
 

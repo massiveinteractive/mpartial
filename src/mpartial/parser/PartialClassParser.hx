@@ -40,9 +40,24 @@ class PartialClassParser extends ClassParser
 {
 	var targets:Array<String>;
 
-	var isPartialClass:Bool;
+	/**
+	Indicates this class implements the <code>Partials</code> Interface 
+	*/
+	var implementsPartial:Bool;
 
-	var aspects:Array<Type>;
+	/**
+	Inidicates this class contains target partial(s) (named Class_[target])
+	*/
+	var hasTargetPartials:Bool;
+
+	/**
+	Indicates this class contains metadata partial(s)
+	*/
+	var hasMetaPartials:Bool;
+
+
+	var metaPartialTypes:Array<Type>;
+
 
 	public var methods:Hash<MethodHelper>;
 	public var properties:Hash<PropertyHelper>;
@@ -57,22 +72,30 @@ class PartialClassParser extends ClassParser
 	{
 		super();
 
-		isPartialClass = force;
+		implementsPartial = force;
+
+		hasTargetPartials = false;
+		hasMetaPartials = false;
 		methods = new Hash();
 		properties = new Hash();
 
-		aspects = [];
 
 		//don't care about other interfaces
 		if(!classType.isInterface)
 		{
-			isPartialClass = implementsPartial(classType);
-			aspects = getAspectTypes(classType);
+			implementsPartial = checkForPartialInterface(classType);
 		}
 
-		trace("isPartialClass", isPartialClass);
-		trace("aspects", aspects);
+		trace("implementsPartial", implementsPartial);
 
+		if(implementsPartial)
+		{
+			metaPartialTypes = getMetaPartialTypes();
+			hasMetaPartials = metaPartialTypes.length > 0;
+
+			trace("hasMetaPartials", hasMetaPartials);
+			trace("metaPartialTypes", metaPartialTypes);
+		}
 
 		if (fields == null) fields = Context.getBuildFields();
 		this.fields = fields;
@@ -81,7 +104,7 @@ class PartialClassParser extends ClassParser
 	/**
 	Check if class type implements mpartial.Partial directly, or via a super interface
 	*/
-	function implementsPartial(t:ClassType):Bool
+	function checkForPartialInterface(t:ClassType):Bool
 	{
 		for (i in t.interfaces)
 		{
@@ -91,49 +114,82 @@ class PartialClassParser extends ClassParser
 			}
 			else if(i.t.get().isInterface)
 			{
-				if(implementsPartial(i.t.get()))
+				if(checkForPartialInterface(i.t.get()))
 					return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	Returns all types defined via the Aspect interface.
-	Checks for Aspect interface and for any other interfaces that extend it.
-
-	@returns array of Type definitions
-	*/
-	function getAspectTypes(t:ClassType):Array<Type>
+	function getMetaPartialTypes():Array<Type>
 	{
-		var aspects:Array<Type> = [];
-
-		for (i in t.interfaces)
+		var types:Array<Type> = [];
+		if(classType.meta.has(":partials"))
 		{
-			if (i.t.toString() == "mpartial.Aspect")
+			for(meta in classType.meta.get())
 			{
-				aspects.push(i.params[0]);
-				//t.interfaces.remove(i);//remove reference to Aspect interface
+				if(meta.name != ":partials") continue;
+
+				for(param in meta.params)
+				{
+					var stringParam = tink.macro.tools.Printer.print(param);
+
+					switch(param.expr)
+					{
+						case EConst(c):
+						{
+							//e.g. State
+							try
+							{
+								var type = Context.getType(stringParam);
+								types.push(type);
+							}
+							catch(e:Dynamic)
+							{
+								throw "invalid @:partials type [" + stringParam + "]";
+							}
+						}
+						case EField(e, field):
+						{
+							//e.g. example.Validator
+							try
+							{
+								var type = Context.getType(stringParam);
+								types.push(type);
+							}
+							catch(e:Dynamic)
+							{
+								throw "invalid @:partials type [" + stringParam + "]";
+							}
+						}
+						default: throw "unsupported @:partials argument [" + stringParam + "]";
+					}
+
+
+				}
 			}
-			else if(i.t.get().isInterface)
-			{
-				aspects = aspects.concat(getAspectTypes(i.t.get()));
-			}
-			
+
+			return types;
 		}
-		return aspects;
+
+		return null;
 	}
+
+
+
 
 	public function build(targets:Array<String>)
 	{
-		if(!isPartialClass && aspects.length == 0) return;
+		if(!implementsPartial) return;
 
 		prepareFields();
 
-		if(isPartialClass)
-		{
-			compilePartialTargets(targets);
+		compileTargetPartials(targets);
 
+		compileMetaPartials(metaPartialTypes);
+
+		if(hasTargetPartials || hasMetaPartials)
+		{
 			var updateInlineReferences = false;
 
 			for (method in methods)
@@ -151,9 +207,7 @@ class PartialClassParser extends ClassParser
 			}
 		}
 
-		if(aspects.length > 0)
-			compileAspects(aspects);
-		
+
 	}
 
 	/**
@@ -186,59 +240,21 @@ class PartialClassParser extends ClassParser
         }
 	}
 
-	function compileAspects(aspects:Array<Type>)
+
+	function compileMetaPartials(types:Array<Type>)
 	{
-		for(type in aspects)
+		for(type in types)
 		{
-			var aspectParser = new AspectClassParser(type);
-			var fields = aspectParser.getFields();
-			appendFields(fields, aspectParser.id);
+			type = Context.follow(type);
 
+			var parser = new  AspectClassParser(type);
 
-			//Note: Haxe210 - cannot modify interfaces
+			var fields = parser.getFields();
+			
+			appendFields(fields, parser.id);
 
-			//classType.interfaces = classType.interfaces.concat(aspectParser.classType.interfaces);
-
-			// var get:Void->ClassType = function()
-			// {
-			// 	return classType;
-			// }
-
-			// switch(type)
-			// {
-			// 	case TInst(t, params):
-			// 		t = {get:get, toString:t.toString};
-			// 		type = TInst(t, params);
-			// 	default: null;
-
-			// }
-
-
-			// var ref:Ref<ClassType> = toRef(classType);
-
-			// type = TInst({t:ref, params:params});
 		}
 	}
-
-	static public function toRef<T>(t:T):Ref<T>
-	{
-
-		var ref:Ref<T> =
-		{
-			toString:function()
-			{
-				return Std.string(t);
-			},
-			get:function()
-			{
-				return t;
-			}
-		}
-
-		
-		return ref;
-	}
-
 
 	/**
 	Forces immediate compilation of additional partial classes based on order of targets.
@@ -246,7 +262,7 @@ class PartialClassParser extends ClassParser
 
 	@param targets 	array of string types (e.g. ['js', foo'])
 	*/
-	function compilePartialTargets(targets:Array<String>)
+	function compileTargetPartials(targets:Array<String>)
 	{
 		this.targets = targets;
 
@@ -269,6 +285,8 @@ class PartialClassParser extends ClassParser
 					{
 						if (StringTools.endsWith(file, name + "_" + target + ".hx"))
 						{
+							hasTargetPartials = true;
+
 							trace(file, name, target);
 
 							var fullPath = File.nativePath(dir + "/" + file);

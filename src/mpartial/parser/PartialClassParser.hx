@@ -56,11 +56,13 @@ class PartialClassParser extends ClassParser
 	var hasMetaPartials:Bool;
 
 
-	var metaPartialTypes:Array<Type>;
+	var metaPartialTypes:Array<String>;
 
 
 	public var methods:Hash<MethodHelper>;
 	public var properties:Hash<PropertyHelper>;
+
+	public var classMap:Hash<Array<Field>>;
 
 	var exprStack(default, null):Array<Expr>;
 
@@ -87,18 +89,6 @@ class PartialClassParser extends ClassParser
 		}
 
 		trace("implementsPartial", implementsPartial);
-
-		if(implementsPartial)
-		{
-			metaPartialTypes = getMetaPartialTypes();
-			hasMetaPartials = metaPartialTypes.length > 0;
-
-			trace("hasMetaPartials", hasMetaPartials);
-			trace("metaPartialTypes", metaPartialTypes);
-		}
-
-		if (fields == null) fields = Context.getBuildFields();
-		this.fields = fields;
 	}
 
 	/**
@@ -121,59 +111,7 @@ class PartialClassParser extends ClassParser
 		return false;
 	}
 
-	function getMetaPartialTypes():Array<Type>
-	{
-		var types:Array<Type> = [];
-		if(classType.meta.has(":partials"))
-		{
-			for(meta in classType.meta.get())
-			{
-				if(meta.name != ":partials") continue;
 
-				for(param in meta.params)
-				{
-					var stringParam = tink.macro.tools.Printer.print(param);
-
-					switch(param.expr)
-					{
-						case EConst(c):
-						{
-							//e.g. State
-							try
-							{
-								var type = Context.getType(stringParam);
-								types.push(type);
-							}
-							catch(e:Dynamic)
-							{
-								throw "invalid @:partials type [" + stringParam + "]";
-							}
-						}
-						case EField(e, field):
-						{
-							//e.g. example.Validator
-							try
-							{
-								var type = Context.getType(stringParam);
-								types.push(type);
-							}
-							catch(e:Dynamic)
-							{
-								throw "invalid @:partials type [" + stringParam + "]";
-							}
-						}
-						default: throw "unsupported @:partials argument [" + stringParam + "]";
-					}
-
-
-				}
-			}
-
-			return types;
-		}
-
-		return null;
-	}
 
 
 
@@ -183,6 +121,14 @@ class PartialClassParser extends ClassParser
 		if(!implementsPartial) return;
 
 		prepareFields();
+
+		metaPartialTypes = getMetaPartialTypes();
+		hasMetaPartials = metaPartialTypes.length > 0;
+
+		trace("hasMetaPartials", hasMetaPartials);
+		trace("metaPartialTypes", metaPartialTypes);
+
+		
 
 		compileTargetPartials(targets);
 
@@ -206,8 +152,28 @@ class PartialClassParser extends ClassParser
 				parseMethods();
 			}
 		}
+	}
 
+	function getMetaPartialTypes():Array<String>
+	{
+		var types:Array<String> = [];
+		if(classType.meta.has(":partials"))
+		{
+			for(meta in classType.meta.get())
+			{
+				if(meta.name != ":partials") continue;
 
+				for(param in meta.params)
+				{
+					var id = tink.macro.tools.Printer.print(param);
+					types.push(id);
+				}
+			}
+
+			return types;
+		}
+
+		return null;
 	}
 
 	/**
@@ -240,19 +206,51 @@ class PartialClassParser extends ClassParser
         }
 	}
 
-
-	function compileMetaPartials(types:Array<Type>)
+	function compileMetaPartials(types:Array<String>)
 	{
-		for(type in types)
+		for(id in types)
 		{
-			type = Context.follow(type);
+			trace("id: " + id);
 
-			var parser = new  AspectClassParser(type);
+			var type:Type = null;
+			var parser:AspectClassParser = null;
 
-			var fields = parser.getFields();
-			
-			appendFields(fields, parser.id);
+			if(!classMap.exists(id))
+			{
+				try
+				{
+					type = Context.getType(id);
+					type = Context.follow(type);
+				}
+				catch(e:Dynamic)
+				{
+					if(!classMap.exists(id))
+					{
+						 throw "unsupported @:partials argument [" + id + "]";
+					}
+				}
+			}
 
+			if(classMap.exists(id))
+			{
+				//if already cached, use them
+				var fields = classMap.get(id);
+				appendFields(fields, id);
+				continue;
+			}
+			else
+			{
+				var parser = new  AspectClassParser(type);
+
+				var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.fields;
+
+				classMap.set(id, fields);
+
+				if(id != parser.id)
+					classMap.set(parser.id, fields);
+
+				appendFields(fields, parser.id);
+			}
 		}
 	}
 

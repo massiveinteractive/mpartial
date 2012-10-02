@@ -60,6 +60,8 @@ class ClassParser extends TypeParser
 			trace("warning", "unsupported type", type);
 
 		trace("class", id);
+		
+		this.fields =  Context.getBuildFields();
 	}
 
 	function set_memberName(value:String):String

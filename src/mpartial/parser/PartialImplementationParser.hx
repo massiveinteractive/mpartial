@@ -53,7 +53,6 @@ class PartialImplementationParser extends ClassParser
 
 		convertIntoPseudoSubClass(type, parent);
 
-		fields = Context.getBuildFields();
 		parent.appendFields(fields, id);
 	}
 

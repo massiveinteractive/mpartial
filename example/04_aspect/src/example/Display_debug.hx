@@ -1,6 +1,6 @@
 package example;
 
-class Display_debug
+class Display_debug implements mpartial.PartialFragment
 {
 	@:partialReplace
 	public var debug:Bool = true;

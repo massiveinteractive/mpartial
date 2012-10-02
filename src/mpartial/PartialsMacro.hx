@@ -28,6 +28,7 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 import haxe.macro.Compiler;
 import mpartial.parser.PartialClassParser;
+import mpartial.parser.ClassParser;
 import mpartial.parser.PartialImplementationParser;
 import msys.File;
 import msys.Directory;
@@ -58,6 +59,12 @@ class PartialsMacro
 	Aggregated targets based on configuration
 	*/
 	static var targets:Array<String> = [];
+
+	/**
+	hash of already parsed class fields
+	*/
+	static var classFieldMap:Hash<Array<Field>> = new Hash();
+
 
 	/**
 	Configure macro to include specific partial implementations.
@@ -238,6 +245,25 @@ class PartialsMacro
 	}
 
 	/**
+	Build macro triggered by mpartial.PartialFragment interface.
+	Stores fields in a hash and removes class from compilation.
+	@returns empty field array
+	*/
+	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
+	{
+		var parser = new ClassParser();
+
+		if(!classFieldMap.exists(parser.id))
+			classFieldMap.set(parser.id, parser.fields);
+
+		trace(classFieldMap.exists(parser.id));
+
+		Compiler.exclude(parser.id, false);
+		return [];
+	}
+
+
+	/**
 	Build macro generated for generated partial implementation classes.
 	Not to be called directly.
 	*/
@@ -246,10 +272,6 @@ class PartialsMacro
 		return appendToPartialClass(classParser);
 	}
 
-	/**
-	hash of already parsed classes
-	*/
-	static var partialMap:Hash<Array<Field>> = new Hash();
 
 	/**
 	Parses a class and any associated partial implementations
@@ -260,13 +282,15 @@ class PartialsMacro
 
 		classParser = new PartialClassParser(fields, force);
 
-		if(partialMap.exists(classParser.id))
+		if(classFieldMap.exists(classParser.id))
 		{
+			//prevents macro being re-run the same class
 			return null;
 		}
-			
+		
+		classParser.classMap = classFieldMap;
 		classParser.build(targets);
-		partialMap.set(classParser.id, classParser.fields);
+		classFieldMap.set(classParser.id, classParser.fields);
 		return classParser.fields;
 	}
 
@@ -303,28 +327,6 @@ class FilePrinter extends mconsole.FilePrinter
 		File.remove(path);
 		super(path);
 	}
-
-	// override function printLine(color:mconsole.Printer.ConsoleColor, line:String, pos:PosInfos)
-	// {
-	// 	if(StringTools.startsWith(line, "@"))
-	// 	{
-	// 		var a = line.split(".");
-	// 		while(a.length > 2)
-	// 		{
-	// 			a.shift();
-	// 		}
-
-	// 		if(currentClass != a[0])
-	// 		{
-	// 			currentClass = a[0];
-	// 			super.printLine(color,"@" + currentClass, pos);
-	// 		}
-			
-	// 		currentMethod = a[1];
-	// 	}
-	// 	else
-	// 		super.printLine(color," " + currentMethod + line,pos);
-	// }
 }
 
 #end

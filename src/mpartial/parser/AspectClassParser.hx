@@ -23,9 +23,11 @@ class AspectClassParser extends ClassParser
 	public function new(type:Type)
 	{
 		super(type);
+
+		fields = getFields();
 	}
 
-	public function getFields():Array<Field>
+	function getFields():Array<Field>
 	{
 		switch(type)
 		{

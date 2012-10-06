@@ -48,7 +48,9 @@ class Main
 		Console.assert(example.invalid == true, "invalid should be [true]");
 
 
-		Console.assert(Std.is(example, Stateful), "example should implement Stateful");
+		Console.assert(example.hasSomeFragment, "debug should be [true]");
+		Console.assert(example.value == 10, "value [10] should be defined from SomePartialFragment");
+
 
 
 		trace("Completed");

@@ -32,6 +32,8 @@ import haxe.macro.Type;
 import msys.File;
 import msys.Directory;
 import mpartial.util.ClassUtil;
+import mpartial.util.Macros;
+
 
 /**
 Parses base Partial class and forces compilation of additional partial implementations
@@ -111,11 +113,6 @@ class PartialClassParser extends ClassParser
 		return false;
 	}
 
-
-
-
-
-
 	public function build(targets:Array<String>)
 	{
 		if(!implementsPartial) return;
@@ -127,8 +124,6 @@ class PartialClassParser extends ClassParser
 
 		trace("hasMetaPartials", hasMetaPartials);
 		trace("metaPartialTypes", metaPartialTypes);
-
-		
 
 		compileTargetPartials(targets);
 
@@ -220,6 +215,7 @@ class PartialClassParser extends ClassParser
 				try
 				{
 					type = Context.getType(id);
+					id = Macros.getQualifiedIdFromType(type);
 					type = Context.follow(type);
 				}
 				catch(e:Dynamic)
@@ -254,6 +250,7 @@ class PartialClassParser extends ClassParser
 		}
 	}
 
+	
 	/**
 	Forces immediate compilation of additional partial classes based on order of targets.
 	Looks for matching partial target using naming convention Class_target (e.g. Display_js).

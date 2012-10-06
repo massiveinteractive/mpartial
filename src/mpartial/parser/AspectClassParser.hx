@@ -8,7 +8,6 @@ import haxe.macro.Context;
 import haxe.macro.Compiler;
 import haxe.macro.Type;
 import haxe.PosInfos;
-
 import mpartial.util.Macros;
 
 
@@ -29,6 +28,8 @@ class AspectClassParser extends ClassParser
 
 	function getFields():Array<Field>
 	{
+		trace(id);
+		
 		switch(type)
 		{
 			case TInst(t, _):
@@ -40,10 +41,9 @@ class AspectClassParser extends ClassParser
 		return [];
 	}
 
-	public static function getClassFields(c:ClassType):Array<Field>
+	function getClassFields(c:ClassType):Array<Field>
 	{
 		var fields:Array<Field> = Macros.getClassFields(c);
-
 		var field = getConstructorField(c);
 
 		fields.unshift(field);
@@ -52,8 +52,10 @@ class AspectClassParser extends ClassParser
 
 	}
 
-	public static function getConstructorField(c:ClassType):Field
+	function getConstructorField(c:ClassType):Field
 	{
+		trace(c);
+		trace(c.constructor);
 		var classField = c.constructor.get();
 		classField.name = "new";
 

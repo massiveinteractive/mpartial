@@ -11,6 +11,24 @@ import haxe.PosInfos;
 
 class Macros
 {
+	/**
+	Returns the qualified name of a type
+	@param type the <code>Type</code>
+	@return qualified type string (e.g. example.foo.Bar)
+	*/
+	public static function getQualifiedIdFromType(type:Type):String
+	{
+		switch(type)
+		{
+			case TInst(t, params): return t.toString();
+			case TType(t, params): return t.toString();
+			default: throw "type not implemented.";
+		}
+
+		return null;
+	}
+
+
 	public static function getClassFields(c:ClassType):Array<Field>
 	{
 		if(c.superClass != null)

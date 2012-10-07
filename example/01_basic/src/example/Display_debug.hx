@@ -23,6 +23,10 @@ SOFTWARE.
 package example;
 
 
+/**
+Note: this partial fragment does not implement <code>mpartial.PartialFragment</code>
+and therefore will be still be accessible as a separate class
+*/
 class Display_debug
 {
 	@:partialReplace

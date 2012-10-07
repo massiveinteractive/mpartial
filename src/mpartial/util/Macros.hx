@@ -7,6 +7,7 @@ import haxe.macro.Context;
 import haxe.macro.Compiler;
 import haxe.macro.Type;
 import haxe.PosInfos;
+import tink.macro.tools.TypeTools;
 
 
 class Macros
@@ -22,10 +23,30 @@ class Macros
 		{
 			case TInst(t, params): return t.toString();
 			case TType(t, params): return t.toString();
+			case TEnum(t, params): return t.toString();
 			default: throw "type not implemented.";
 		}
 
 		return null;
+	}
+
+	/**
+	Qualifies the contents of a TPath ComplexType to ensure that the reference
+	is fully qualified.
+	*/
+	public static function qualifyComplexTypePath(complexType:ComplexType):ComplexType
+	{
+		var type = tink.macro.tools.TypeTools.toType(complexType);
+
+		switch(TypeTools.toType(complexType))
+		{
+			case Success(s):
+				return TypeTools.toComplex(s, true);
+			case Failure(f): throw f;
+		}
+
+		return complexType;
+
 	}
 
 

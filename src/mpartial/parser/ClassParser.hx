@@ -30,6 +30,8 @@ import haxe.macro.Compiler;
 import haxe.macro.Type;
 import haxe.PosInfos;
 
+import mpartial.util.Macros;
+
 
 /**
 Base build parser for a class. Used by PartialClassParser and PartialImplementationParser
@@ -61,7 +63,16 @@ class ClassParser extends TypeParser
 
 		trace("class", id);
 		
-		this.fields =  Context.getBuildFields();
+		
+	}
+
+	public function getFields():Array<Field>
+	{
+		if(fields != null) return fields;
+
+		fields =  Context.getBuildFields();
+		
+		return fields;
 	}
 
 	function set_memberName(value:String):String

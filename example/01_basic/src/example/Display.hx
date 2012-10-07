@@ -24,7 +24,7 @@ package example;
 
 class Display implements mpartial.Partial
 {
-	public var debug:Bool = false;
+	public var debug:Bool;
 
 	public var x(default, set_x):Float;
 

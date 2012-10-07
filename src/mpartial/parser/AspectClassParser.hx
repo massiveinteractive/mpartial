@@ -22,23 +22,25 @@ class AspectClassParser extends ClassParser
 	public function new(type:Type)
 	{
 		super(type);
-
-		fields = getFields();
 	}
 
-	function getFields():Array<Field>
+	override public function getFields():Array<Field>
 	{
+		if(fields != null) return fields;
+
 		trace(id);
+
+		fields = [];
 		
 		switch(type)
 		{
 			case TInst(t, _):
-				return getClassFields(t.get());
+				fields = getClassFields(t.get());
 			default:
 				error("Unable to get fields for type [" + type + "]"); 
 		}
 
-		return [];
+		return fields;
 	}
 
 	function getClassFields(c:ClassType):Array<Field>

@@ -30,6 +30,7 @@ import haxe.macro.Compiler;
 import mpartial.parser.PartialClassParser;
 import mpartial.parser.ClassParser;
 import mpartial.parser.PartialImplementationParser;
+import mpartial.parser.FragmentClassParser;
 import msys.File;
 import msys.Directory;
 import haxe.PosInfos;
@@ -246,15 +247,17 @@ class PartialsMacro
 
 	/**
 	Build macro triggered by mpartial.PartialFragment interface.
-	Stores fields in a hash and removes class from compilation.
+	Stores the fields of a class in the <code>classFieldMap</code> hash and
+	removes type from further compilation
+
 	@returns empty field array
 	*/
 	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
 	{
-		var parser = new ClassParser();
+		var parser = new FragmentClassParser();
 
 		if(!classFieldMap.exists(parser.id))
-			classFieldMap.set(parser.id, parser.fields);
+			classFieldMap.set(parser.id, parser.getFields());
 
 		trace(classFieldMap.exists(parser.id));
 

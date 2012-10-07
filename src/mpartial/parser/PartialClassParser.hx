@@ -117,6 +117,8 @@ class PartialClassParser extends ClassParser
 	{
 		if(!implementsPartial) return;
 
+		fields = Context.getBuildFields();
+
 		prepareFields();
 
 		metaPartialTypes = getMetaPartialTypes();
@@ -127,7 +129,11 @@ class PartialClassParser extends ClassParser
 
 		compileTargetPartials(targets);
 
-		compileMetaPartials(metaPartialTypes);
+		for(name in metaPartialTypes)
+		{
+			compilePartialFragment(name);
+		}
+
 
 		if(hasTargetPartials || hasMetaPartials)
 		{
@@ -164,11 +170,9 @@ class PartialClassParser extends ClassParser
 					types.push(id);
 				}
 			}
-
-			return types;
 		}
 
-		return null;
+		return types;
 	}
 
 	/**
@@ -183,8 +187,6 @@ class PartialClassParser extends ClassParser
 	    		case FFun(f): 
 	    		{
 	    			var method = new MethodHelper(field, f, id);
-	    			trace(method.location);
-	    			trace(tink.macro.tools.Printer.print(f.expr));
 					methods.set(field.name, method);
 	    		}
 	    		case FVar(t,e): 
@@ -201,62 +203,72 @@ class PartialClassParser extends ClassParser
         }
 	}
 
-	function compileMetaPartials(types:Array<String>)
+
+	/**
+	Compiles a partial fragment based on the qualified (or unqualified) name of the class or fragment.
+
+	@param name 	qualified (or unqualified) name of a class
+	@param exclude 	optional flag for target fragments to prevent a module from being compiled separately.
+	*/
+	
+	function compilePartialFragment(name:String, ?exclude:Bool=false)
 	{
-		for(id in types)
+		trace("fragment name", name);
+		var type:Type = null;
+		var parser:AspectClassParser = null;
+
+		if(!classMap.exists(name))
 		{
-			trace("id: " + id);
-
-			var type:Type = null;
-			var parser:AspectClassParser = null;
-
-			if(!classMap.exists(id))
+			//force compilation of target type
+			try
 			{
-				try
-				{
-					type = Context.getType(id);
-					id = Macros.getQualifiedIdFromType(type);
-					type = Context.follow(type);
-				}
-				catch(e:Dynamic)
-				{
-					if(!classMap.exists(id))
-					{
-						 throw "unsupported @:partials argument [" + id + "]";
-					}
-				}
+				type = Context.getType(name);
+				name = Macros.getQualifiedIdFromType(type);
+				type = Context.follow(type);
 			}
-
-			if(classMap.exists(id))
+			catch(e:Dynamic)
 			{
-				//if already cached, use them
-				var fields = classMap.get(id);
-				appendFields(fields, id);
-				continue;
-			}
-			else
-			{
-				var parser = new  AspectClassParser(type);
-
-				var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.fields;
-
-				classMap.set(id, fields);
-
-				if(id != parser.id)
-					classMap.set(parser.id, fields);
-
-				appendFields(fields, parser.id);
+				if(!classMap.exists(name))
+				{
+					 throw "unsupported @:partials argument [" + name + "]";
+				}
 			}
 		}
+
+		if(classMap.exists(name))
+		{
+			//if already cached, then use cached fields
+			var fields = classMap.get(name);
+			appendFields(fields, name);
+
+			Context.registerModuleDependency(id, name);
+		}
+		else
+		{
+			var parser = new AspectClassParser(type);
+
+			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.fields;
+
+			classMap.set(name, fields);
+
+			if(name != parser.id)
+				classMap.set(parser.id, fields);
+
+			appendFields(fields, parser.id);
+
+			Context.registerModuleDependency(id, parser.id);
+
+			if(exclude)
+			{
+				Compiler.exclude(parser.id, false);
+			}
+		}
+
+
+		
 	}
 
-	
-	/**
-	Forces immediate compilation of additional partial classes based on order of targets.
-	Looks for matching partial target using naming convention Class_target (e.g. Display_js).
 
-	@param targets 	array of string types (e.g. ['js', foo'])
-	*/
 	function compileTargetPartials(targets:Array<String>)
 	{
 		this.targets = targets;
@@ -282,10 +294,10 @@ class PartialClassParser extends ClassParser
 						{
 							hasTargetPartials = true;
 
-							trace(file, name, target);
+							var targetClass = id + "_" + target;
 
-							var fullPath = File.nativePath(dir + "/" + file);
-							compilePartialFile(file, fullPath, target);
+							Compiler.addMetadata("@:build(mpartial.PartialsMacro.fragment())", targetClass);
+							compilePartialFragment(targetClass);
 							continue;		
 						}
 					}
@@ -294,117 +306,6 @@ class PartialClassParser extends ClassParser
 		}
 	}
 
-	/**
-	Creates a copy of the partial class in a temporary source directory.
-	This copy is modified to fully expanded references to classes/types referenced via imports (macro restriction)
-	Also converts class name to a valid Haxe format (e.g. Display_js_generated)
-
-	@param file 	the name of the partial class file (e.g. Display_js.hx)
-	@param path 	the full path to the file 
-	@param target 	the current partial target
-	*/
-	function compilePartialFile(file:String, path:String, target:String)
-	{
-		var cls = packageName + "." + file.substr(0, file.length - 3);
-		if (cls.charAt(0) == ".") cls = cls.substr(1);
-
-		var imports = ClassUtil.getImports(path);
-		var contents = File.read(path);
-
-		contents = replaceWithFullyQualifiedTypes(contents,imports);
-		
-		var regName:EReg = new EReg("class " + name + "_" + target, "g");
-
-		var genClass = name + "_" + target + "_generated";
-		contents = regName.replace(contents, "class " + genClass);
-
-		var packagePath = packageName.split(".").join("/");
-		if (packagePath != "") packagePath += "/";
-
-		var genFile = PartialsMacro.SRC_DIR + packagePath + genClass + ".hx";
-
-		if(!File.exists(PartialsMacro.SRC_DIR + packagePath))
-		{
-			Directory.create(PartialsMacro.SRC_DIR + packagePath);
-		}
-		File.write(genFile, contents);
-
-		var qualifiedGenClass = packageName + "." + genClass;
-
-		trace("qualifiedGenClass", qualifiedGenClass);
-		Compiler.addMetadata("@:build(mpartial.PartialsMacro.buildImplementation(" + id + "))", qualifiedGenClass);
-		Context.registerModuleDependency(id, genFile);
-		var a = Context.getModule(qualifiedGenClass);
-	}
-
-	/**
-	extracts all types from imports and expands any local references to fully qualified ones.
-	E.g. Lib.xxx becomes js.Lib.xxx
-
-	@param contents		string contents of a class
-	@param modules 		array of classes/modules to expand
-	@return updated contents
-	*/
-	function replaceWithFullyQualifiedTypes(contents:String, modules:Array<String>):String
-	{
-		for (module in modules)
-		{
-			var qualifiedTypes = getQualifiedTypesInModule(module);
-
-			for (type in qualifiedTypes)
-			{
-				var pack = type.split(".");
-				var sub = pack.pop();
-				var reg:EReg = new EReg("(:| |\t|\\()(" + sub + ")(\\.| |\\)|;|\\()", "g");
-
-				contents = reg.replace(contents, "$1" + type + "$3");
-			}
-		}
-		return contents;
-	}
-
-	/**
-	Returns the fully qualified names of all classes/types within a module
-	@param module 	a class module (e.g. js.Dom)
-	@return array of qualified type names
-	*/
-	function getQualifiedTypesInModule(module:String):Array<String>
-	{
-		var types = Context.getModule(module);
-
-		var qualifiedTypes:Array<String> = [];
-
-		for (type in types)
-		{
-			var typeName:String  = null;
-			switch(type)
-			{
-				case TType(t, params):
-				{
-					if (params.length == 0)
-						typeName = t.toString();
-				}
-				case TInst(t, params):
-				{
-					if (params.length == 0)
-						typeName = t.toString();
-				}
-				default: null;
-			}
-
-			if (typeName == null) continue;
-
-			if (typeName == module)
-				qualifiedTypes.push(typeName);
-
-			else
-			{
-				var pack = typeName.split(".");
-				qualifiedTypes.push(module + "." + pack.pop());
-			}
-		}
-		return qualifiedTypes;
-	}
 
 	// ------------------------------------------------------------------------- Append Fields
 
@@ -440,6 +341,7 @@ class PartialClassParser extends ClassParser
 	function appendProperty(field:Field, fromId:String)
 	{
 		memberName = field.name;
+
 
 		var prop = new PropertyHelper(field, fromId);
 
@@ -502,8 +404,9 @@ class PartialClassParser extends ClassParser
 		{
 			error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, pos);
 		}
-		
-		if(Std.string(prop.type) != Std.string(existingProp.type))
+
+
+		if(!areMatchingComplexTypes(prop.type, existingProp.type))
 		{
 			error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, pos);
 		}
@@ -538,6 +441,34 @@ class PartialClassParser extends ClassParser
 		}
 	}
 	
+	/**
+	Compares the type paths of two complex types.
+
+	In some cases during compilation, base types like Bool, Float, etc can return
+	as sub types of <code>StdTypes</code>, causing false mismatch
+
+	@returns true if types match
+	*/
+	function areMatchingComplexTypes(type1:ComplexType, type2:ComplexType)
+	{
+		if(Std.string(type1) == Std.string(type2)) return true;
+
+		var path1:TypePath = switch(type1)
+		{
+			case TPath(p): p;
+			default: null;
+		}
+
+		var path2:TypePath = switch(type2)
+		{
+			case TPath(p): p;
+			default: null;
+		}
+
+		return mpartial.util.TypePaths.matches(path1, path2);
+			
+	}
+
 	function appendMethod(field:Field, f:Function, fromId:String)
 	{
 		memberName = field.name;

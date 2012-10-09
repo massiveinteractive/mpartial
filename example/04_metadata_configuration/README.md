@@ -3,35 +3,66 @@ Partials - Metadata Configuration
 
 This example demonstrates how partials can be configured via class metadata.
 
-There are several benfits.
+### Benfits
+
+There are a few benfits for using metadata wiring for partials (compared to
+automatic wiring of target based partials)
 
 1. Partials can be injected with fields from existing classes
-2. Partials can be injected with fragments within 
-
-In this case the target `Example` class contains a `State` aspect
-
-	class Example implements mpartial.Aspect<State>
-	{
-		...
-	} 
-
-
-At compilation, the instance fields of `State` (properties and methods) are
-copied into the `Example` class.
-
-### Metadata
-
-Aspect fields support the same metadata tags as Partials.
-
-By default the constructor expressions within the Aspect are appended to the
-constructor of the target (auto-adding `@:partialAppend`). This can be modified by
-specifying an alternative
+2. PartialFragments can be specified via an Interface and not compiled as standalone class
 
 
 ### Limitations
 
 There are a few limitations
 
-1. An Aspect must be a valid class (as they are compiled prior to the target)
-2. An Aspect cannot extend another class (i.e. have a super class). This limitation may be lifted in the future
-3. The target class cannot inherit the Interfaces defined on the Aspect (limitation of macro/compiler lifecyle)
+2. An existing or fragment class cannot extend another class (i.e. have a super class). This limitation may be lifted in the future
+3. The target class cannot inherit Interfaces defined on an existing or fragment class.
+(limitation of macro/compiler lifecyle)
+
+
+
+### Usage
+
+Firstly, the class **must** implement `mpartial.Partial`.
+
+Secondly, the class must contain a `@:partials` metadata containing a comma delimetered list of classes
+
+	@:partials(Foo, foo.bar)
+	class Test implements mpartial.Partial
+	{
+		...
+	}
+
+Any target based fragments (e.g. `Test_js') will be appended after metadata defined ones.
+
+### Example
+
+Simple example
+
+	@:partials(SomeClass, SomeFragment)
+	class Example implements mpartial.Partial
+	{
+
+	}
+
+	class SomeClass
+	{
+		public var foo:Int = 10;
+	}
+
+	class SomeFragment implements mpartial.PartialFragment
+	{
+		public var bar:Bool = true;
+	}
+
+
+### Metadata
+
+By default the constructor expressions within a class or fragment are appended to the
+constructor of the target (auto-adding `@:partialAppend`). This can be modified by
+specifying an alternative
+
+All other field metadata follows default mpartial metadata rules.
+
+

@@ -24,6 +24,7 @@ package example;
 
 import js.Lib;
 import js.Dom;
+import haxe.xml.Fast;
 
 class Display_js
 {
@@ -32,18 +33,20 @@ class Display_js
 	@:partialAppend
 	public function new()
 	{
+		var x = Fast;
+		var z = Lib.document;
 		element = Lib.document.createElement("div");
-		element.style.position = "absolute";
-		element.style.backgroundColor="#CCCCCC";
-		Lib.document.body.appendChild(element);
+		// element.style.position = "absolute";
+		// element.style.backgroundColor="#CCCCCC";
+		// Lib.document.body.appendChild(element);
 	}
 
 	@:partialAppend
 	function redraw()
 	{
-		element.style.marginTop = x + "px";
-		element.style.marginLeft = y + "px";
-		element.style.width = width + "px";
-		element.style.height = height + "px";
+		// element.style.marginTop = x + "px";
+		// element.style.marginLeft = y + "px";
+		// element.style.width = width + "px";
+		// element.style.height = height + "px";
 	}
 }

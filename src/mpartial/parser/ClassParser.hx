@@ -34,7 +34,8 @@ import mpartial.util.Macros;
 
 
 /**
-Base build parser for a class. Used by PartialClassParser and PartialImplementationParser
+Base parser for classes the provides some common utilities and properties common
+to PartialClassParser, FragmentClassParser and ExistingClassParser.
 */
 class ClassParser extends TypeParser
 {

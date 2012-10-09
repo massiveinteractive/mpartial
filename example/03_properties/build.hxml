@@ -1,6 +1,7 @@
 -main Main
 -neko build/main.n
 -lib mpartial
+-lib tink_macros
 -cp src
 -cmd neko build/main.n
 
@@ -9,6 +10,7 @@
 -main Main
 -neko build/main-debug.n
 -lib mpartial
+-lib tink_macros
 -cp src
 -debug
 

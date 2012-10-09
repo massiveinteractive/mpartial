@@ -5,32 +5,33 @@
 -lib mpartial
 -lib tink_macros
 -cp src
-# -debug
-# --next
+-debug
+--next
 
-# -main Main
-# -js build/main.js
-# -cp src
-# -lib mpartial
-# -lib tink_macros
-# -debug
-# -D web
+-main Main
+-js build/main.js
+-cp src
+-lib mpartial
+-lib tink_macros
+-debug
+-D web
 
-# --next
+--next
 
-# -main Main
-# -neko build/main.n
-# -lib mpartial
-# -lib tink_macros
-# -cp src
-# -debug
-# -cmd neko build/main.n
+-main Main
+-neko build/main.n
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+-cmd neko build/main.n
 
-# --next
+--next
 
-# -main Main
-# -cpp build/main_cpp
-# -lib mpartial
-# -cp src
-# -debug
-# -cmd build/main_cpp/Main-debug
+-main Main
+-cpp build/main_cpp
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+-cmd build/main_cpp/Main-debug

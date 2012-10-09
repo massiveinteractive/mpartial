@@ -42,7 +42,7 @@ class Main
 
 		var config = new Config();
 
-		#if (debug || swf || cpp)
+		#if (debug || flash || cpp)
 			
 			assert(config.a);
 			assert(config.c);

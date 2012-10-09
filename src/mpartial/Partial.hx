@@ -23,6 +23,8 @@ SOFTWARE.
 package mpartial;
 
 /**
-Interface for class expecting partial implementations
+Interface for class expecting partial implementations.
+
+Triggers the build macro for a Partial Class
 */
 @:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}

@@ -10,7 +10,9 @@ import haxe.macro.Type;
 import haxe.PosInfos;
 import tink.macro.tools.TypeTools;
 
-
+/**
+Utilities for working with <code>TypePath</code> references
+*/
 class TypePaths
 {	
 	/**
@@ -57,7 +59,22 @@ class TypePaths
 		return tink.macro.tools.Printer.printPath("", path);
 	}
 
+	/**
+	Converts a TypePath into an array of parts (e.g. "foo", "Bar")
+	*/
+	public static function toParts(path:TypePath):Array<String>
+	{
+		//e.g. { name => Sprite, pack => [], params => [], sub => null }
 
+		var parts = path.pack.concat([]);
+
+		parts.push(path.name);
+
+		if(path.sub != null && path.sub != path.name)
+			parts.push(path.sub);
+
+		return parts;
+	}
 
 	/**
 	Compares two type path, normalising subs .
@@ -83,9 +100,8 @@ class TypePaths
 			path2.sub = null;
 		}
 
-		return Std.string(path1) != Std.string(path2);
+		return Std.string(path1) == Std.string(path2);
 	}
-
 }
 
 

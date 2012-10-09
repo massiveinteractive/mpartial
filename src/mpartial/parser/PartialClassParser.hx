@@ -31,12 +31,13 @@ import haxe.PosInfos;
 import haxe.macro.Type;
 import msys.File;
 import msys.Directory;
-import mpartial.util.ClassUtil;
 import mpartial.util.Macros;
-
+import tink.macro.tools.ExprTools;
 
 /**
-Parses base Partial class and forces compilation of additional partial implementations
+Augments the fields of a <code>Partial</code> class with the fields from one or
+more other classes or <code>PartialFragment</code> classes.
+
 */
 class PartialClassParser extends ClassParser
 {
@@ -65,10 +66,6 @@ class PartialClassParser extends ClassParser
 	public var properties:Hash<PropertyHelper>;
 
 	public var classMap:Hash<Array<Field>>;
-
-	var exprStack(default, null):Array<Expr>;
-
-	var functionStack(default, null):Array<Function>;
 
 	var imports:Array<String>;
 
@@ -203,19 +200,17 @@ class PartialClassParser extends ClassParser
         }
 	}
 
-
 	/**
 	Compiles a partial fragment based on the qualified (or unqualified) name of the class or fragment.
 
 	@param name 	qualified (or unqualified) name of a class
-	@param exclude 	optional flag for target fragments to prevent a module from being compiled separately.
 	*/
 	
-	function compilePartialFragment(name:String, ?exclude:Bool=false)
+	function compilePartialFragment(name:String)
 	{
 		trace("fragment name", name);
 		var type:Type = null;
-		var parser:AspectClassParser = null;
+		var parser:ExistingClassParser = null;
 
 		if(!classMap.exists(name))
 		{
@@ -235,6 +230,9 @@ class PartialClassParser extends ClassParser
 			}
 		}
 
+		trace("!");
+		trace(type);
+
 		if(classMap.exists(name))
 		{
 			//if already cached, then use cached fields
@@ -245,9 +243,9 @@ class PartialClassParser extends ClassParser
 		}
 		else
 		{
-			var parser = new AspectClassParser(type);
+			var parser = new ExistingClassParser(type);
 
-			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.fields;
+			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.getFields();
 
 			classMap.set(name, fields);
 
@@ -257,15 +255,7 @@ class PartialClassParser extends ClassParser
 			appendFields(fields, parser.id);
 
 			Context.registerModuleDependency(id, parser.id);
-
-			if(exclude)
-			{
-				Compiler.exclude(parser.id, false);
-			}
 		}
-
-
-		
 	}
 
 
@@ -547,41 +537,36 @@ class PartialClassParser extends ClassParser
 	 */
 	function parseMethods()
 	{
-		exprStack = [];
-		functionStack = [];
-
 		for (method in methods.iterator())
 		{
 			memberName = method.field.name;
+			trace("!!!!!!!");
 
-			functionStack = [method.f];
-			method.f.expr = parseExpr(method.f.expr);
+			var exprParser = new RecursiveExprParser(parseExpr);
+			method.f.expr = exprParser.parse(method.f.expr);
+
 		}	
 	}
-
 	/////////
 
-	/**
-		recursively steps through expressions and parses accordingly
-	*/
-	function parseExpr(expr:Expr):Expr
-	{
-		if (expr == null) return null;
-		
-		exprStack.push(expr);	
 
-		expr = parse(expr);
-		
-		exprStack.pop();
+	function parseExpr(expr:Expr, exprStack:Array<Expr>):Expr
+	{
+		switch(expr.expr)
+		{
+			case ECall(e, params):
+				parseECall(expr, e, params, exprStack);
+				
+
+			default: null;
+		}
 
 		return expr;
 	}
 
-	function parseECall(expr:Expr, e:Expr, params:Array<Expr>)
-	{
-		e = parseExpr(e);
-		params = parseExprs(params);
 
+	function parseECall(expr:Expr, e:Expr, params:Array<Expr>, exprStack:Array<Expr>)
+	{
 		var method:MethodHelper = null;
 
 		switch(e.expr)
@@ -616,7 +601,7 @@ class PartialClassParser extends ClassParser
 
 		trace("method.field.name", method.field.name);
 
-		var parentExpr = exprStack[exprStack.length-2];
+		var parentExpr = exprStack[exprStack.length-1];
 		
 		if (isEBlock(parentExpr))
 		{
@@ -666,232 +651,6 @@ class PartialClassParser extends ClassParser
 		return exprs;
 	}
 
-	function parse(expr:Expr):Expr
-	{
-		switch(expr.expr)
-		{
-			case EContinue: null;
-			case EBreak: null;
-			case EConst(c): null;//i.e. any constant (string, type, int, regex, ident (local var ref))
-			case EFunction(name, f): 
-			{
-				//e.g. var f = function()
-				functionStack.push(f);
-				f.expr = parseExpr(f.expr);
-				expr.expr = EFunction(name, f);
-				functionStack.pop();
-			}
-			case EDisplayNew(t): null;  //no idea what this is??
-			case EDisplay(e, isCall):
-			{
-				//no idea what this is???
-				e = parseExpr(e);
-				expr.expr = EDisplay(e, isCall);
-			}
-			case ECast(e, t):
-			{
-				// cast(foo, Foo);
-				e = parseExpr(e);
-				expr.expr = ECast(e, t);
-			}
-			case EIf(econd, eif, eelse):
-			{
-				//e.g. if (){}else{}
-				parseEIf(expr, econd, eif, eelse);
-			}
-		
-			case ESwitch(e, cases, edef):
-			{	
-				parseESwitch(expr, e, cases, edef);
-			}
-			case ETry(e, catches):
-			{
-				//e.g. try{...}catch(){}
-				parseExpr(e);
-				for (c in catches)
-				{
-					parseExpr(c.expr);
-				}
-			}
-			case EThrow(e): 
-			{
-				//e.g. throw "ARRGH!"
-				e = parseExpr(e);
-				expr.expr = EThrow(e);
-			}
-			case EWhile(econd, e, normalWhile):
-			{
-				//e.g. while(i<2){}
-				econd = parseExpr(econd);
-				e = parseExpr(e);
-				expr.expr = EWhile(econd, e, normalWhile);
-			}
-			case EField(e, field):
-			{
-				//e.g. isFoo
-				e = parseExpr(e);
-				expr.expr = EField(e, field);
-			}
-			case EParenthesis(e): 
-			{
-				//e.g. (...)
-				e = parseExpr(e);
-				expr.expr = EParenthesis(e);
-			}
-			
-			case ENew(t, params):
-			{
-				//e.g. new Foo();
-				params = parseExprs(params);
-				expr.expr = ENew(t, params);
-			}
-			
-			case EType(e, field):
-			{
-				//e.g. Foo.bar;
-				e = parseExpr(e);
-				expr.expr = EType(e, field);
-
-			}
-			case ECall(e, params):
-			{
-				//e.g. method(); 
-
-				// e = parseExpr(e);
-				// params = parseExprs(params);
-				// expr.expr = ECall(e, params);
-
-				parseECall(expr, e, params);
-			}
-			case EReturn(e):
-			{
-				//e.g. return foo;
-				e = parseExpr(e);
-				expr.expr = EReturn(e);
-			}
-			case EVars(vars):
-			{
-				//e.g. var i = xxx;
-				for (v in vars)
-				{
-					v.expr = parseExpr(v.expr);
-				}
-			}
-			case EBinop(op, e1, e2):
-			{
-				//e.g. i<2; a||b, i==b
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EBinop(op, e1, e2);
-			}
-			case EUnop(op,postFix,e):
-			{
-				//e.g. i++;
-				e = parseExpr(e);
-				expr.expr = EUnop(op, postFix, e);
-			}
-			case ETernary(econd, eif, eelse): 
-			{
-				//e.g. var n = (1 + 1 == 2) ? 4 : 5;
-				parseETernary(expr, econd, eif, eelse);
-			}
-			case EObjectDecl(fields):
-			{
-				//e.g. var o = { a:"a", b:"b" }
-				for (f in fields)
-				{
-					parseExpr(f.expr);
-				}
-			}
-			case EFor(it, e):
-			{
-				//e.g. for (i in 0...5){}
-				it = parseExpr(it);
-				e = parseExpr(e);
-				expr.expr = EFor(it, e);
-			}
-			case EIn(e1, e2):
-			{
-				//e.g. for (i in 0...5){}
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EIn(e1, e2);
-			}
-			case EArrayDecl(values):
-			{
-				//e.g. a = [1,2,3];
-				for (v in values)
-				{
-					v = parseExpr(v);
-				}
-			}
-			case EArray(e1, e2):
-			{
-				//not sure dif with EArrayDecl
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EArray(e1, e2);
-			}
-			case EBlock(exprs): 
-			{
-				//array of expressions e.g. {...}
-				exprs = parseExprs(exprs);
-				expr.expr = EBlock(exprs);
-
-			}
-			case EUntyped(e1): null;//don't want to mess around with untyped code
-			default: trace(expr.expr);
-		}
-		return expr;
-	}
-
-	function parseEIf(expr:Expr, econd:Expr, eif:Expr, eelse:Expr)
-	{
-		econd = parseExpr(econd);
-		eif = parseExpr(eif);
-		eelse = parseExpr(eelse);
-		expr.expr = EIf(econd, eif, eelse);
-	}
-
-	function parseESwitch(expr:Expr, e:Expr, cases: Array<{ values : Array<Expr>, expr : Expr }>, edef:Null<Expr>)
-	{
-		e = parseExpr(e);
-
-		for (c in cases)
-		{
-			c.values = parseExprs(c.values);
-			c.expr = parseExpr(c.expr);	
-		}
-
-		edef = parseExpr(edef);
-		expr.expr = ESwitch(e, cases, edef);
-	}
-
-	function parseETernary(expr:Expr, econd:Expr, eif:Expr, eelse:Expr)
-	{
-		econd = parseExpr(econd);
-		eif = parseExpr(eif);
-		eelse = parseExpr(eelse);
-		expr.expr = ETernary(econd, eif, eelse);
-	}
-
-	/////////
-
-	/**
-	parses an array of expressions
-
-	@return updated array of expressions
-	*/
-	public function parseExprs(exprs:Array<Expr>):Array<Expr>
-	{
-		var temp:Array<Expr> = exprs.concat([]);
-
-		for (expr in temp)
-		{
-			expr = parseExpr(expr);
-		}
-		return exprs;
-	}
 }
 
 #end

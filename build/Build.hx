@@ -33,8 +33,8 @@ class Build extends mtask.core.BuildBase
 	@target function haxelib(target:HaxeLib)
 	{
 		target.url = "http://github.com/massiveinteractive/mpartial";
-		target.description = "A Haxe macro library for utilizing Partials and Aspects. Supports AVM1, AVM2, JavaScript, Neko and C++.";
-		target.versionDescription = "Added support for Aspects (e.g. 'class Foo implements mpartial.Aspect<Bar>')";
+		target.description = "A Haxe macro library for working with Partials. Supports AVM1, AVM2, JavaScript, Neko and C++.";
+		target.versionDescription = "Added support for class specific partial fragments via class metadata (e.g. @:partial(Foo, Bar))";
 
 		target.addTag("macro");
 		target.addTag("cross");
@@ -61,12 +61,12 @@ class Build extends mtask.core.BuildBase
 			rm(path + "/01_basic/build");
 			rm(path + "/02_metadata/build");
 			rm(path + "/03_properties/build");
-			rm(path + "/04_aspect/build");
+			rm(path + "/04_metadata_configuration/build");
 
 			mkdir(path + "/01_basic/build");
 			mkdir(path + "/02_metadata/build");
 			mkdir(path + "/03_properties/build");
-			mkdir(path + "/04_aspect/build");
+			mkdir(path + "/04_metadata_configuration/build");
 				
 		}
 	}

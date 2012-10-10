@@ -29,7 +29,7 @@ Example contains custom mapped partials using the @:partials class metadata.
 //note: cannot use <T> inside metadata tag
 typedef IntValidator = example.Validator<Int>;
 
-@:partials(State, IntValidator, SomePartialFragment, SomeLocalPartialFragment)
+@:partials(State, IntValidator, SomePartialFragment)
 class Example implements mpartial.Partial, implements Stateful
 {
 	public var value:Int = 0;
@@ -43,17 +43,4 @@ class Example implements mpartial.Partial, implements Stateful
 	{
 		//do something
 	}
-}
-
-
-class SomeLocalPartialFragment implements mpartial.PartialFragment
-{
-	public var local:Int = 0;
-
-	@:partialAppend
-	public function new()
-	{
-		local = 10;
-	}
-
 }

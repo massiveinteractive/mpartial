@@ -49,10 +49,6 @@ class Main
 
 		Console.assert(example.value == 10, "value [10] should be defined from SomePartialFragment");
 
-
-		Console.assert(example.local == 10, "local should be set from SomeLocalPartialFragment");
-
-
 		trace("Completed");
 	}
 }

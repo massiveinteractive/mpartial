@@ -230,7 +230,6 @@ class PartialClassParser extends ClassParser
 			}
 		}
 
-		trace("!");
 		trace(type);
 
 		if(classMap.exists(name))
@@ -243,6 +242,7 @@ class PartialClassParser extends ClassParser
 		}
 		else
 		{
+
 			var parser = new ExistingClassParser(type);
 
 			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.getFields();

@@ -4,32 +4,25 @@ It is a Haxe macro utility for working with partial code and classes.
 
 **Features**
 
-There are two ways to leverage partials:
+- inject fields from one class into another class during compilation
+- override/append/replace fields within a target class based on compilation flags/platform
 
-1. Partial implementation Files
-2. Aspects
+**Terminology**
 
-The `mpartial.Partial` interface enables managing multiple platform implementations (e.g js, flash, neko, c++) of a class within separate files.
+- **Partial Target** A host target class that implements `mpartial.Partial`. 
+- **Partial Fragment** An incomplete class fragment to inject into a Partial Target. May explicitly implement `mpartial.PartialFragment`
+- **Platform Fragment** A fragment associated with the current Haxe platform (e.g. `Example_js`)
+- **Macro Fragment** A custom platform fragment defined via macros (e.g. `--macro mpartial.PartialsMacro.append`)
+- **Metadata Fragment** A fragment defined via class metadata (e.g. `@:mpartial(SomePartial)`)   
 
-	class Example implements mpartial.Partial
-	{
-		//class that may contain external partial implemplementation files
-	}
- 
-At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
+**Approaches**
 
-	class Example_js
-	{
-		//copies fields into Example at compilation
-	}
+There are several ways to configure partials:
 
+1. Automatic Haxe platform partial fragments based on current compiler target (js, flash, cpp, etc)
+1. Custom target flags via macro (`--macro mpartial.PartialsMacro.append("foo", "bar")`)
+1. Array of fragments defined in class metadata (`@:metadata(SomeClass, SomeFragment)`)
 
-The `mpartial.Aspect` interface enables a class to augment (copy) the fields of another class
-
-	class ExampleClass implements mpartial.Aspect<AnotherClass>
-	{
-		...
-	}
 
 **Benefits:**
 
@@ -38,8 +31,6 @@ The `mpartial.Aspect` interface enables a class to augment (copy) the fields of 
 - no unnecessary inheritance just to separate common base logic from platform specific logic (ExampleJS extends ExampleBase)
 - ability to augment classes with multiple or alternate aspects/implementations based on compilation flags
 
-
-
 **Risks:**
 
 - partials can be abused if used to arbitrarily separate parts of a class's code across multiple files
@@ -47,79 +38,54 @@ The `mpartial.Aspect` interface enables a class to augment (copy) the fields of 
 
 **Current Limitations:**
 
-- cannot use 'using' within partial implementations
-- cannot use Aspect<T> with a type <T> that extends another class
+1. Fragments must be located in separate module (file) from the Partial target.
+2. An existing or fragment class cannot extend another class (i.e. have a super class). This limitation may be lifted in the future
+3. The target class will not inherit and Interfaces/ super classes defined in a fragment class.
+(limitation of Haxe's macro/compiler lifecyle)
+4. The use of 'using' within fragments may not be supported
 
 
-## Getting Started
+## Usage Guide
 
-You can download example usage of mpartial [here](https://github.com/downloads/massiveinteractive/mpartial/examples.zip).
+### Defining a Partial Target
 
-### Partial implementation
+The `mpartial.Partial` interface identifes a class as a **Partial target**. 
 
-1. Implement `mpartial.Partial` on the base class
+	class Example implements mpartial.Partial
+	{
+		//class that may contain external partial implemplementation files
+	}
 
-		class Foo implements mpartial.Partial
-		{
-			...
-		}
+### Platform Partial Fragments
 
-2. Create one or more partial implementations using the '_xxx' naming convention (must be in seperate files)
+By default, mpartial will check for any matching Haxe target partial fragments (e.g js, flash, neko, c++) during compilation.
+ 
+At compilation time, the platform specific implementations (i.e. partials) are augmented directly into the original base class - reducing the amount of inheritance while keeping platform specific logic separate
 
-		class Foo_js
-		{
-			...
-		}
+	class Example_js
+	{
+		//copies fields into Example at compilation
+	}
 
-### Aspects
+Debug partial fragments can be injected by using the debug compilation flag (`-debug`)
 
-1. Create your aspect as you would any normal class
+	class Example_debug
+	{
+		//copies fields into Example at compilation if -debug flag is set
+	}
 
-	> Note: This needs to be a valid, compilable class
-
-		class Foo
-		{
-			var prop:String;
-
-			function new()
-			{
-				prop = "helloWorld";
-			}
-
-			function setProp(value:String)
-			{
-				prop = value;
-			}
-		}
-
-2. Implement the `mpartial.Aspect` on the target class
-
-		class Bar implements mpartial.Aspect<Foo>
-		{
-			...
-		}
-
-
-
-
-### Compiling Partials
-
-
-**Auto Configuration**
-
-By default, the PartialsMacro uses the standard compilation flags to determine which partial target(s) to include.
-
-This includes the current target (js, flash, flash8, neko, php, cpp, java, cs) and the debug flag (-debug)
-
-
-> Note: Aspects require no compilation configuration
-
-
-**Manual Configuration**
+### Manual Configuration via macros
 
 To override which partials to include use the configure macro
 
 	--macro mpartial.PartialsMacro.configure(['js', 'foo', 'bar'])
+
+This will replace the default platform flag with the ones specified
+
+	class Example_foo
+	{
+		//copies fields into Example at compilation
+	}
 
 The default targets is the equivalent of setting
 
@@ -129,133 +95,42 @@ To append additional custom partials after the detault ones use the append macro
 
 	--macro mpartial.PartialsMacro.append(['foo'])
 
-**Keep Generated Classes**
+This will append the 'foo' fragment after the platform fragment
 
-Under the hood the macro generates expanded versions of the partial classes during compilation. To keep these files around (in a gen_partials directory)
-
-	--macro mpartial.PartialsMacro.configure([], true)
-
-## Simple Example - Partials
-
-This is a simple example of the main API. Several working examples can be found in example/macro/partial. 
-
-Base class defines common API
-
-	class Foo implements mpartial.Partial
+	class Example_foo
 	{
-		public var flag:Bool = false;
-
-		var bar:Int;
-
-		public function new()
-		{
-			bar = 0;
-		}
-
-		function doSomething(value:Int)
-		{
-			
-		}
+		//copies fields into Example at compilation
 	}
 
-Individual platforms provide additional/bespoke implementations
+### Custom Partial Fragments via metadata
 
-	class Foo_js
+Partial fragments can also be configured via metadata.
+
+	@:partials(SomeFragment, SomeOtherFragment)
+	class Example implements mpartial.Partial
 	{
-		@:partialReplace
-		public var flag:Bool = true;
-
-
-		@:partialAppend
-		public function new()
-		{
-			bar = 1;
-		}
-
-		@:partialReplace
-		function doSomething(value:Int)
-		{
-			bar += value;
-			trace(bar);
-		}
+		//partial target class
 	}
 
+Fragments configured via metadata do not need to conform to the naming convention
+of platform/flag fragments. Any existing (valid) class (that doesn't have any inheritance)
+can be used as a fragment.
 
-Equivalent compiled class:
-
-	class Foo
+	class SomeFragment
 	{
-		public var flag:Bool = true;
-
-		var bar:Int;
-
-		public function new()
-		{
-			bar = 0;
-			bar = 1;
-		}
-
-		function doSomething(value:Int)
-		{
-			bar += value;
-			trace(bar);
-		}
+		//copies fields into any partial targets
 	}
 
-## Simple Example - Aspect
+If a fragment is not a valid class in it's own right (may reference
+properties/methods defined in a Partial target), then it should implement
+PartialFragment. This prevents the file from being compiled directly.
 
-This is a simple example for using Aspects 
-
-Create an 'aspect' class
-
-	class State
+	class SomeOtherFragment implements mpartial.PartialFragment
 	{
-		public var state:Int;
-
-		public function new()
-		{
-			state = 0;
-		}
-
-		public function setState(state:Int)
-		{
-			this.state = state;
-		}
+		//copies fields into any partial targets and
+		//removes module from further compilation
 	}
 
-Create a target class that uses the aspect
-
-	class Foo implements mpartial.Aspect<State>
-	{
-		var bar:String;
-
-		public function new()
-		{
-			bar = "hello";
-		}
-	}
-
-
-Equivalent compiled class:
-
-	class Foo
-	{
-		var bar:String;
-
-		public var state:Int;
-
-		public function new()
-		{
-			bar = "hello";
-			state = 0;
-		}
-
-		public function setState(state:Int)
-		{
-			this.state = state;
-		}
-
-	}
 
 
 ## Method Metadata
@@ -396,28 +271,146 @@ Prevents partial classes from modifiying the original property field.
 	public var property:String = "bar";
 
 
+
+------------------------------
+
+## Examples
+
+You can download example usage of mpartial [here](https://github.com/downloads/massiveinteractive/mpartial/examples.zip).
+
+### Simple Example - Platform Fragments
+
+This is a simple example of the main API. Several working examples can be found in example/macro/partial. 
+
+Base class defines common API
+
+	class Foo implements mpartial.Partial
+	{
+		public var flag:Bool = false;
+
+		var bar:Int;
+
+		public function new()
+		{
+			bar = 0;
+		}
+
+		function doSomething(value:Int)
+		{
+			
+		}
+	}
+
+Individual platforms provide additional/bespoke implementations
+
+	class Foo_js
+	{
+		@:partialReplace
+		public var flag:Bool = true;
+
+		@:partialAppend
+		public function new()
+		{
+			bar = 1;
+		}
+
+		@:partialReplace
+		function doSomething(value:Int)
+		{
+			bar += value;
+			trace(bar);
+		}
+	}
+
+
+Equivalent compiled class:
+
+	class Foo
+	{
+		public var flag:Bool = true;
+
+		var bar:Int;
+
+		public function new()
+		{
+			bar = 0;
+			bar = 1;
+		}
+
+		function doSomething(value:Int)
+		{
+			bar += value;
+			trace(bar);
+		}
+	}
+
+### Simple Example - Metadata Fragments
+
+This is a simple example for using metadata 
+
+Define a Partial fragment
+
+	class State
+	{
+		public var state:Int;
+
+		public function new()
+		{
+			state = 0;
+		}
+
+		public function setState(state:Int)
+		{
+			this.state = state;
+		}
+	}
+
+Define a target class that uses the metadata
+
+	@:partials(State)
+	class Foo implements mpartial.Partial
+	{
+		var bar:String;
+
+		public function new()
+		{
+			bar = "hello";
+		}
+	}
+
+
+Equivalent compiled class:
+
+	class Foo
+	{
+		var bar:String;
+
+		public var state:Int;
+
+		public function new()
+		{
+			bar = "hello";
+			state = 0;
+		}
+
+		public function setState(state:Int)
+		{
+			this.state = state;
+		}
+
+	}
+
+
 ## How it Works
 
 ### Partials
 
-When a Partial class is compiled, the compiler will check for matching `_{target}` implementations and force compile them prior to completing the original class.
+When a Partial target class is compiled, the compiler will look up any matching fragments and force compile them prior to injecting them into the target. The order is as follows
 
-If no matching `_{target}` files are found, then the class is compiled as normal.
+1. Fragments defined via @:partials metadata on the target class
+1. Platform Fragments that matching the current Haxe platform target (unless overridden via the 'configure' macro). Fragment must match the target class name appended with `_{platform}`.
+1. Custom fragment tags defined via the 'configure' or 'append' macro. Fragment must match the target class name appended with `_{platform}`.
+1. Debug fragment (if compiling with the -debug flag). Fragment must match the target class name appended with `_debug`.
 
-Due to limitations of the Haxe macro API, each `_{target}` implementation is copied and updated so that all type references (class, enum, typedef) originating from import statements can be converted to fully qualified paths.
-
-These generated classes follow the pattern `{ClassName}_{target}_generated` and stored in a `.temp/mpartial` directory in the current project directory.
-
-To keep these generated files post compilation
-
-	--macro mpartial.PartialsMacro.configure([], true)
-
-Or call directly
-
-	--macro mpartial.PartialsMacro.keepGeneratedClasses()
-
-### Aspects
-
-During compilation, the fields of the Aspect<T> type <T> are copied into the target classs. All fields are appended using the same rules that apply to Partial implementations.
-
+If no matching `_{target}` files are found during these stages (other than the first) then the class is compiled as normal.
 

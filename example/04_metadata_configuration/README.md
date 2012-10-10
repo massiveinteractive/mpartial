@@ -8,14 +8,15 @@ This example demonstrates how partials can be configured via class metadata.
 There are a few benfits for using metadata wiring for partials (compared to
 automatic wiring of target based partials)
 
-1. Partials can be injected with fields from existing classes
-2. PartialFragments can be specified via an Interface and not compiled as standalone class
+1. The fields of existing classes can be injected into a Partial.
+2. Non compilable class fragments can implement PartialFragment to be excluded from compilation as a standalone class.
 
 
 ### Limitations
 
 There are a few limitations
 
+1. PartialFragments must be located in separate module (file) from the Partial target.
 2. An existing or fragment class cannot extend another class (i.e. have a super class). This limitation may be lifted in the future
 3. The target class cannot inherit Interfaces defined on an existing or fragment class.
 (limitation of macro/compiler lifecyle)

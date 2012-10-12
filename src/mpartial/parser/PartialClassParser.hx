@@ -73,6 +73,8 @@ class PartialClassParser extends ClassParser
 	{
 		super();
 
+		trace("class " + id);
+
 		implementsPartial = force;
 
 		hasTargetPartials = false;
@@ -82,12 +84,12 @@ class PartialClassParser extends ClassParser
 
 
 		//don't care about other interfaces
-		if(!classType.isInterface)
+		if(!classType.isInterface && !force)
 		{
 			implementsPartial = checkForPartialInterface(classType);
 		}
 
-		trace("implementsPartial", implementsPartial);
+		trace("implements Partial :" + implementsPartial);
 	}
 
 	/**
@@ -122,7 +124,9 @@ class PartialClassParser extends ClassParser
 		hasMetaPartials = metaPartialTypes.length > 0;
 
 		trace("hasMetaPartials", hasMetaPartials);
-		trace("metaPartialTypes", metaPartialTypes);
+
+		if(hasMetaPartials)
+			trace("metaPartialTypes", metaPartialTypes);
 
 		compileTargetPartials(targets);
 
@@ -150,6 +154,9 @@ class PartialClassParser extends ClassParser
 				parseMethods();
 			}
 		}
+
+
+		//trace(id + "\n" + tink.macro.tools.Printer.printFields("  ", fields));
 	}
 
 	function getMetaPartialTypes():Array<String>
@@ -208,7 +215,7 @@ class PartialClassParser extends ClassParser
 	
 	function compilePartialFragment(name:String)
 	{
-		trace("fragment name", name);
+		trace("fragment", name);
 		var type:Type = null;
 		var parser:ExistingClassParser = null;
 
@@ -307,6 +314,7 @@ class PartialClassParser extends ClassParser
 	{
 		for (field in fields)
         {
+        	trace("append", field.name);
         	switch(field.kind)
 	    	{
 	    		case FFun(f):
@@ -332,8 +340,9 @@ class PartialClassParser extends ClassParser
 	{
 		memberName = field.name;
 
-
 		var prop = new PropertyHelper(field, fromId);
+
+		trace("exists", properties.exists(field.name));
 
 		if(properties.exists(field.name))
 		{
@@ -395,7 +404,6 @@ class PartialClassParser extends ClassParser
 			error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, pos);
 		}
 
-
 		if(!areMatchingComplexTypes(prop.type, existingProp.type))
 		{
 			error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, pos);
@@ -442,6 +450,8 @@ class PartialClassParser extends ClassParser
 	function areMatchingComplexTypes(type1:ComplexType, type2:ComplexType)
 	{
 		if(Std.string(type1) == Std.string(type2)) return true;
+	
+		if(type2 == null) return false;
 
 		var path1:TypePath = switch(type1)
 		{

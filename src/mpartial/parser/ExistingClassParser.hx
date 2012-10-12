@@ -21,6 +21,7 @@ class ExistingClassParser extends ClassParser
 	public function new(type:Type)
 	{
 		super(type);
+		trace("class " + id);
 	}
 
 	override public function getFields():Array<Field>

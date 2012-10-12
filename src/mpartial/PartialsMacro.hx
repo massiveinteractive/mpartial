@@ -34,7 +34,6 @@ import msys.File;
 import msys.Directory;
 import haxe.PosInfos;
 
-
 class PartialsMacro
 {
 	public static var TEMP_DIR:String = ".temp/mpartial/";
@@ -235,15 +234,11 @@ class PartialsMacro
 	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
 	{
 		init();
-
-		trace("!");
 		
 		var parser = new FragmentClassParser();
 
 		if(!classMap.exists(parser.id))
 			classMap.set(parser.id, parser.getFields());
-
-		trace(classMap.exists(parser.id));
 
 		Compiler.exclude(parser.id, false);
 		return [];

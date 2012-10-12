@@ -61,9 +61,6 @@ class ClassParser extends TypeParser
 
 		if(id == null)
 			trace("warning", "unsupported type", type);
-
-		trace("class", id);
-		
 		
 	}
 
@@ -81,8 +78,6 @@ class ClassParser extends TypeParser
 		memberName = value;
 
 		location = id + (memberName != null ? "." + memberName : "");
-
-		trace("location", location);
 
 		return value;
 	}

@@ -22,7 +22,7 @@ class FragmentClassParser extends ClassParser
 	public function new()
 	{
 		super();
-
+		trace("class " + id);
 	}
 
 	/**

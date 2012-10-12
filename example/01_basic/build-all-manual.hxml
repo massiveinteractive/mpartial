@@ -1,0 +1,32 @@
+
+-main Main
+-swf build/main.swf
+-swf-version 10
+-swf-header 1024:769:60:FFFFFF
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+--macro mpartial.PartialsMacro.append(['foo'])
+
+--next
+
+-main Main
+-js build/main.js
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+-D web
+--macro mpartial.PartialsMacro.append(['foo'])
+--next
+
+-main Main
+-neko build/main.n
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+--macro mpartial.PartialsMacro.append(['foo'])
+
+-cmd neko build/main.n

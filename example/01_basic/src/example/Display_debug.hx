@@ -20,11 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
+
 
 /**
-Interface for class expecting partial implementations.
-
-Triggers the build macro for a Partial Class
+Note: this partial fragment does not implement <code>mpartial.PartialFragment</code>
+and therefore will be still be accessible as a separate class
 */
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+class Display_debug
+{
+	@:partialReplace
+	public var debug:Bool = true;
+
+	@:partialAppend
+	public function new()
+	{
+		trace("debug new");
+	}
+
+	@:partialAppend
+	function redraw()
+	{
+		trace("debug redraw");
+	}
+}

@@ -20,11 +20,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
 /**
-Interface for class expecting partial implementations.
-
-Triggers the build macro for a Partial Class
+State is a standalone class that is used as a partial fragment
 */
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+class State implements Stateful
+{
+	public var state:Int;
+
+	public var presetState:Int = 1;
+
+	public function new()
+	{
+		state = 0;
+	}
+
+	public function setState(state:Int)
+	{
+		this.state = state;
+	}
+
+	@:partialAppend
+	public function reset()
+	{
+		state = 0;
+	}
+
+
+}
+

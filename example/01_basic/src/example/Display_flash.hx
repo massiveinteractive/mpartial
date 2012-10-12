@@ -20,11 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
-/**
-Interface for class expecting partial implementations.
+import flash.display.Sprite;
 
-Triggers the build macro for a Partial Class
-*/
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+class Display_flash
+{
+	public var sprite:Sprite;
+
+	@:partialAppend
+	public function new()
+	{
+		sprite = new Sprite();
+		flash.Lib.current.addChild(sprite);
+	}
+
+	@:partialAppend
+	function redraw()
+	{
+		sprite.x = x;
+		sprite.y = y;
+		sprite.graphics.beginFill(0x00FF00);
+		sprite.graphics.drawRect(0,0,width, height);
+		sprite.graphics.endFill();
+	}
+}

@@ -31,23 +31,41 @@ import haxe.PosInfos;
 import haxe.macro.Type;
 import msys.File;
 import msys.Directory;
-import mpartial.util.ClassUtil;
+import mpartial.util.Macros;
+import tink.macro.tools.ExprTools;
 
 /**
-Parses base Partial class and forces compilation of additional partial implementations
+Augments the fields of a <code>Partial</code> class with the fields from one or
+more other classes or <code>PartialFragment</code> classes.
+
 */
-class PartialClassParser extends BaseParser
+class PartialClassParser extends ClassParser
 {
 	var targets:Array<String>;
 
-	var isPartialClass:Bool;
+	/**
+	Indicates this class implements the <code>Partials</code> Interface 
+	*/
+	var implementsPartial:Bool;
+
+	/**
+	Inidicates this class contains target partial(s) (named Class_[target])
+	*/
+	var hasTargetPartials:Bool;
+
+	/**
+	Indicates this class contains metadata partial(s)
+	*/
+	var hasMetaPartials:Bool;
+
+
+	var metaPartialTypes:Array<String>;
+
 
 	public var methods:Hash<MethodHelper>;
 	public var properties:Hash<PropertyHelper>;
 
-	var exprStack(default, null):Array<Expr>;
-
-	var functionStack(default, null):Array<Function>;
+	public var classMap:Hash<Array<Field>>;
 
 	var imports:Array<String>;
 
@@ -55,38 +73,29 @@ class PartialClassParser extends BaseParser
 	{
 		super();
 
-		isPartialClass = force;
+		trace("class " + id);
+
+		implementsPartial = force;
+
+		hasTargetPartials = false;
+		hasMetaPartials = false;
 		methods = new Hash();
 		properties = new Hash();
 
-		trace("qualifiedClassName", qualifiedClassName);
-		
-		switch(type)
-		{
-			case TInst(t, params):
-			{
-				var classType = t.get();
 
-				//don't care about other interfaces
-				if(!classType.isInterface && implementsMPartial(classType))
-				{
-					isPartialClass = true;
-				}
-					
-			}
-			default: null;
+		//don't care about other interfaces
+		if(!classType.isInterface && !force)
+		{
+			implementsPartial = checkForPartialInterface(classType);
 		}
 
-		trace("isPartialClass", isPartialClass);
-
-		if (fields == null) fields = Context.getBuildFields();
-		this.fields = fields;
+		trace("implements Partial :" + implementsPartial);
 	}
 
 	/**
 	Check if class type implements mpartial.Partial directly, or via a super interface
 	*/
-	function implementsMPartial(t:ClassType):Bool
+	function checkForPartialInterface(t:ClassType):Bool
 	{
 		for (i in t.interfaces)
 		{
@@ -96,7 +105,7 @@ class PartialClassParser extends BaseParser
 			}
 			else if(i.t.get().isInterface)
 			{
-				if(implementsMPartial(i.t.get()))
+				if(checkForPartialInterface(i.t.get()))
 					return true;
 			}
 		}
@@ -105,27 +114,69 @@ class PartialClassParser extends BaseParser
 
 	public function build(targets:Array<String>)
 	{
-		if(!isPartialClass) return;
+		if(!implementsPartial) return;
+
+		fields = Context.getBuildFields();
 
 		prepareFields();
 
-		compilePartialTargets(targets);
+		metaPartialTypes = getMetaPartialTypes();
+		hasMetaPartials = metaPartialTypes.length > 0;
 
-		var updateInlineReferences = false;
+		trace("hasMetaPartials", hasMetaPartials);
 
-		for (method in methods)
+		if(hasMetaPartials)
+			trace("metaPartialTypes", metaPartialTypes);
+
+		compileTargetPartials(targets);
+
+		for(name in metaPartialTypes)
 		{
-			if (method.isStrictInlined())
+			compilePartialFragment(name);
+		}
+
+
+		if(hasTargetPartials || hasMetaPartials)
+		{
+			var updateInlineReferences = false;
+
+			for (method in methods)
 			{
-				updateInlineReferences = true;
-				break;
+				if (method.isStrictInlined())
+				{
+					updateInlineReferences = true;
+					break;
+				}
+			}
+
+			if (updateInlineReferences)
+			{
+				parseMethods();
 			}
 		}
 
-		if (updateInlineReferences)
+
+		//trace(id + "\n" + tink.macro.tools.Printer.printFields("  ", fields));
+	}
+
+	function getMetaPartialTypes():Array<String>
+	{
+		var types:Array<String> = [];
+		if(classType.meta.has(":partials"))
 		{
-			parseMethods();
+			for(meta in classType.meta.get())
+			{
+				if(meta.name != ":partials") continue;
+
+				for(param in meta.params)
+				{
+					var id = tink.macro.tools.Printer.print(param);
+					types.push(id);
+				}
+			}
 		}
+
+		return types;
 	}
 
 	/**
@@ -139,34 +190,87 @@ class PartialClassParser extends BaseParser
 	    	{
 	    		case FFun(f): 
 	    		{
-	    			var method = new MethodHelper(field, f, qualifiedClassName);
+	    			var method = new MethodHelper(field, f, id);
 					methods.set(field.name, method);
 	    		}
 	    		case FVar(t,e): 
 	    		{
-	    			var property = new PropertyHelper(field, qualifiedClassName);
+	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
 	    		}
 	    		case FProp(get,set,t, e): 
 	    		{
-	    			var property = new PropertyHelper(field, qualifiedClassName);
+	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
 	    		}
 	    	}
         }
 	}
-	
-	/**
-	Forces immediate compilation of additional partial classes based on order of targets.
-	Looks for matching partial target using naming convention Class_target (e.g. Display_js).
 
-	@param targets 	array of string types (e.g. ['js', foo'])
+	/**
+	Compiles a partial fragment based on the qualified (or unqualified) name of the class or fragment.
+
+	@param name 	qualified (or unqualified) name of a class
 	*/
-	function compilePartialTargets(targets:Array<String>)
+	
+	function compilePartialFragment(name:String)
+	{
+		trace("fragment", name);
+		var type:Type = null;
+		var parser:ExistingClassParser = null;
+
+		if(!classMap.exists(name))
+		{
+			//force compilation of target type
+			try
+			{
+				type = Context.getType(name);
+				name = Macros.getQualifiedIdFromType(type);
+				type = Context.follow(type);
+			}
+			catch(e:Dynamic)
+			{
+				if(!classMap.exists(name))
+				{
+					 throw "unsupported @:partials argument [" + name + "]";
+				}
+			}
+		}
+
+		trace(type);
+
+		if(classMap.exists(name))
+		{
+			//if already cached, then use cached fields
+			var fields = classMap.get(name);
+			appendFields(fields, name);
+
+			Context.registerModuleDependency(id, name);
+		}
+		else
+		{
+
+			var parser = new ExistingClassParser(type);
+
+			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.getFields();
+
+			classMap.set(name, fields);
+
+			if(name != parser.id)
+				classMap.set(parser.id, fields);
+
+			appendFields(fields, parser.id);
+
+			Context.registerModuleDependency(id, parser.id);
+		}
+	}
+
+
+	function compileTargetPartials(targets:Array<String>)
 	{
 		this.targets = targets;
 
-		var packagePath = currentPackageName.split(".").join("/");
+		var packagePath = packageName.split(".").join("/");
 		if (packagePath != "") packagePath += "/";
 
 		for (classPath in Context.getClassPath())
@@ -178,14 +282,19 @@ class PartialClassParser extends BaseParser
 
 			for (file in Directory.readDirectory(dir))
 			{
+				
 				if (StringTools.endsWith(file, ".hx") )
 				{
 					for (target in targets)
 					{
-						if (StringTools.endsWith(file, currentClassName + "_" + target + ".hx"))
+						if (StringTools.endsWith(file, name + "_" + target + ".hx"))
 						{
-							var fullPath = File.nativePath(dir + "/" + file);
-							compilePartialFile(file, fullPath, target);
+							hasTargetPartials = true;
+
+							var targetClass = id + "_" + target;
+
+							Compiler.addMetadata("@:build(mpartial.PartialsMacro.fragment())", targetClass);
+							compilePartialFragment(targetClass);
 							continue;		
 						}
 					}
@@ -194,161 +303,280 @@ class PartialClassParser extends BaseParser
 		}
 	}
 
+
+	// ------------------------------------------------------------------------- Append Fields
+
 	/**
-	Creates a copy of the partial class in a temporary source directory.
-	This copy is modified to fully expanded references to classes/types referenced via imports (macro restriction)
-	Also converts class name to a valid Haxe format (e.g. Display_js_generated)
-
-	@param file 	the name of the partial class file (e.g. Display_js.hx)
-	@param path 	the full path to the file 
-	@param target 	the current partial target
+	Appends an array of fields from another type to the current class, potentially
+	replacing or modifying existing fields with the same name
 	*/
-	function compilePartialFile(file:String, path:String, target:String)
+	public function appendFields(fields:Array<Field>, fromId:String)
 	{
-		var cls = currentPackageName + "." + file.substr(0, file.length - 3);
-		if (cls.charAt(0) == ".") cls = cls.substr(1);
+		for (field in fields)
+        {
+        	trace("append", field.name);
+        	switch(field.kind)
+	    	{
+	    		case FFun(f):
+	    		{
+	    			appendMethod(field, f,fromId);
+	    		}
+	    		case FVar(t, e):
+	    		{
+	    			appendProperty(field,fromId);
+	    		}
+	    		case FProp(get,set,t,e):
+	    		{
+	    			appendProperty(field,fromId);
+	    		}
+	    	}
+        }
+	}
 
-		var imports = ClassUtil.getImports(path);
-		var contents = File.read(path);
+	/**
+	Appends a property field to the current class.
+	*/
+	function appendProperty(field:Field, fromId:String)
+	{
+		memberName = field.name;
 
-		contents = replaceWithFullyQualifiedTypes(contents,imports);
+		var prop = new PropertyHelper(field, fromId);
+
+		trace("exists", properties.exists(field.name));
+
+		if(properties.exists(field.name))
+		{
+			var existingProp = properties.get(field.name);
+
+			validateProperty(prop, existingProp);
+
+			if(prop.expr == null && existingProp.expr != null)
+			{
+				prop.expr = existingProp.expr;
+			}
+
+			fields.remove(existingProp.field);
+			fields.push(field);
+			properties.set(field.name, prop);
+
+		}
+		else
+		{
+			fields.push(field);
+			properties.set(field.name, prop);
+		}
 		
-		var regName:EReg = new EReg("class " + currentClassName + "_" + target, "g");
-
-		var genClass = currentClassName + "_" + target + "_generated";
-		contents = regName.replace(contents, "class " + genClass);
-
-		var packagePath = currentPackageName.split(".").join("/");
-		if (packagePath != "") packagePath += "/";
-
-		var genFile = PartialsMacro.SRC_DIR + packagePath + genClass + ".hx";
-
-		if(!File.exists(PartialsMacro.SRC_DIR + packagePath))
-		{
-			Directory.create(PartialsMacro.SRC_DIR + packagePath);
-		}
-		File.write(genFile, contents);
-
-		var qualifiedGenClass = currentPackageName + "." + genClass;
-		Compiler.addMetadata("@:build(mpartial.PartialsMacro.buildImplementation(" + qualifiedClassName + "))", qualifiedGenClass);
-		Context.registerModuleDependency(qualifiedClassName, genFile);
-		var a = Context.getModule(qualifiedGenClass);
 	}
 
 	/**
-	extracts all types from imports and expands any local references to fully qualified ones.
-	E.g. Lib.xxx becomes js.Lib.xxx
+	Compares the partial property with the base instance to ensure it is a 
+	valid modification.
+	<ul>
+		<li>Compiler error if existing prop is marked as final</li>
+		<li>Compiler error if property has no partial metadata (invalid override)</li>
+		<li>Compiler error if property overriden multiple times in the one file</li>
+		<li>Compiler error if property types do not match</li>
+		<li>Compiler error if converting getter/setter to a simple var</li>
+		<li>Compiler error if adding/removing static accessor</li>
+		<li>Compiler error if changing/removing existing public access</li>
+		<li>Compiler warning if adding/removing inline accessor</li>
+		<li>Compiler warning if adding public accessor</li>
+	</ul>
 
-	@param contents		string contents of a class
-	@param modules 		array of classes/modules to expand
-	@return updated contents
 	*/
-	function replaceWithFullyQualifiedTypes(contents:String, modules:Array<String>):String
+	function validateProperty(prop:PropertyHelper, existingProp:PropertyHelper)
 	{
-		for (module in modules)
+
+		var pos = prop.getPos();
+
+		if (existingProp.isFinal)
 		{
-			var qualifiedTypes = getQualifiedTypesInModule(module);
-
-			for (type in qualifiedTypes)
-			{
-				var pack = type.split(".");
-				var sub = pack.pop();
-				var reg:EReg = new EReg("(:| |\t|\\()(" + sub + ")(\\.| |\\)|;|\\()", "g");
-
-				contents = reg.replace(contents, "$1" + type + "$3");
-			}
+			error("Cannot override @" + PropertyHelper.META_FINAL + " in " + location, pos);
 		}
-		return contents;
+		
+		if (!prop.hasPartialImplementationMetadata)
+		{
+			error("Property requires partial metadata. Cannot override " + location, pos);
+		}
+
+		if (prop.className == existingProp.className)
+		{
+			error("Duplicate @" + PropertyHelper.META_REPLACE + " for " + location, pos);
+		}
+
+		if(!areMatchingComplexTypes(prop.type, existingProp.type))
+		{
+			error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, pos);
+		}
+		
+		if(existingProp.isFProp && !prop.isFProp)
+		{
+			error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, pos);
+		}
+		
+		if(existingProp.isFProp && !prop.isFProp)
+		{
+			error("Cannot replace getter/setter with simple var on " + location + " with @" + PropertyHelper.META_REPLACE, pos);
+		}
+
+		if(existingProp.hasAccess(AStatic) != prop.hasAccess(AStatic))
+		{
+			error("Cannot " + (prop.hasAccess(AStatic) ? "add":"remove") + " 'static' accessor on " + location, pos);
+		}
+
+		if(existingProp.hasAccess(APublic) && !prop.hasAccess(APublic))
+		{
+			error("Cannot remove 'public' accessor on " + location, pos);
+		}
+		else if (!existingProp.hasAccess(APublic) && prop.hasAccess(APublic))
+		{
+			warning("Adding 'public' accessor on " + location, pos);
+		}
+
+		if(existingProp.hasAccess(AInline) != prop.hasAccess(AInline))
+		{
+			warning((prop.hasAccess(AInline) ? "Adding":"Removing") + " 'inline' accessor on " + location, pos);
+		}
+	}
+	
+	/**
+	Compares the type paths of two complex types.
+
+	In some cases during compilation, base types like Bool, Float, etc can return
+	as sub types of <code>StdTypes</code>, causing false mismatch
+
+	@returns true if types match
+	*/
+	function areMatchingComplexTypes(type1:ComplexType, type2:ComplexType)
+	{
+		if(Std.string(type1) == Std.string(type2)) return true;
+	
+		if(type2 == null) return false;
+
+		var path1:TypePath = switch(type1)
+		{
+			case TPath(p): p;
+			default: null;
+		}
+
+		var path2:TypePath = switch(type2)
+		{
+			case TPath(p): p;
+			default: null;
+		}
+
+		return mpartial.util.TypePaths.matches(path1, path2);
+			
 	}
 
-	/**
-	Returns the fully qualified names of all classes/types within a module
-	@param module 	a class module (e.g. js.Dom)
-	@return array of qualified type names
-	*/
-	function getQualifiedTypesInModule(module:String):Array<String>
+	function appendMethod(field:Field, f:Function, fromId:String)
 	{
-		var types = Context.getModule(module);
+		memberName = field.name;
 
-		var qualifiedTypes:Array<String> = [];
+		if (f.expr == null ) return;
 
-		for (type in types)
+		var method = new MethodHelper(field, f, fromId);
+
+		if (methods.exists(memberName))
 		{
-			var typeName:String  = null;
-			switch(type)
+			var existingMethod = methods.get(memberName);
+
+			if (existingMethod.isFinal)
 			{
-				case TType(t, params):
-				{
-					if (params.length == 0)
-						typeName = t.toString();
-				}
-				case TInst(t, params):
-				{
-					if (params.length == 0)
-						typeName = t.toString();
-				}
-				default: null;
+				error("Cannot override @" + MethodHelper.META_FINAL + " in " + location, method.f.expr.pos);
+			}
+			else if (method.isInlined && !existingMethod.isInlined) 
+			{
+				Context.warning("Cannot define @" + MethodHelper.META_INLINED + " in a partial implementation of " + location, method.f.expr.pos);
+			}
+			else if (!method.hasPartialImplementationMetadata)
+			{
+				error("Method requires partial metadata. Cannot override " + location, method.f.expr.pos);
 			}
 
-			if (typeName == null) continue;
+			var existingExprs = method.isReplace ? [] : existingMethod.getExprs();
 
-			if (typeName == module)
-				qualifiedTypes.push(typeName);
+			var targetExprs = method.getExprs();
 
+			if ( method.insertAt == null)
+			{
+				for (expr in targetExprs)
+				{
+					existingExprs.push(expr);
+				}
+			}
 			else
 			{
-				var pack = typeName.split(".");
-				qualifiedTypes.push(module + "." + pack.pop());
+				var before = existingExprs.slice(0,  method.insertAt);
+				var after = existingExprs.slice( method.insertAt);
+
+				while(existingExprs.length > 0)
+				{
+					existingExprs.pop();
+				}
+
+				for (expr in before)
+				{
+					existingExprs.push(expr);
+				}
+
+				for (expr in targetExprs)
+				{
+					existingExprs.push(expr);
+				}
+
+				for (expr in after)
+				{
+					existingExprs.push(expr);
+				}
 			}
+			existingMethod.f.expr.expr = EBlock(existingExprs);
 		}
-		return qualifiedTypes;
+		else
+		{
+			fields.push(field);
+			methods.set(memberName, method);
+		}
 	}
 
-	///////////////
+
+	//-------------------------------------------------------------------------- parse fields
 
 	/**
 	 * loops through all methods
 	 */
 	function parseMethods()
 	{
-		exprStack = [];
-		functionStack = [];
-
 		for (method in methods.iterator())
 		{
-			currentMethodName = method.field.name;
-			currentLocation = qualifiedClassName+ "." + currentMethodName;
+			memberName = method.field.name;
+			trace("!!!!!!!");
 
-			trace("currentLocation", currentLocation);
+			var exprParser = new RecursiveExprParser(parseExpr);
+			method.f.expr = exprParser.parse(method.f.expr);
 
-			functionStack = [method.f];
-			method.f.expr = parseExpr(method.f.expr);
 		}	
 	}
-
 	/////////
 
-	/**
-		recursively steps through expressions and parses accordingly
-	*/
-	function parseExpr(expr:Expr):Expr
-	{
-		if (expr == null) return null;
-		
-		exprStack.push(expr);	
 
-		expr = parse(expr);
-		
-		exprStack.pop();
+	function parseExpr(expr:Expr, exprStack:Array<Expr>):Expr
+	{
+		switch(expr.expr)
+		{
+			case ECall(e, params):
+				parseECall(expr, e, params, exprStack);
+				
+
+			default: null;
+		}
 
 		return expr;
 	}
 
-	function parseECall(expr:Expr, e:Expr, params:Array<Expr>)
-	{
-		e = parseExpr(e);
-		params = parseExprs(params);
 
+	function parseECall(expr:Expr, e:Expr, params:Array<Expr>, exprStack:Array<Expr>)
+	{
 		var method:MethodHelper = null;
 
 		switch(e.expr)
@@ -383,7 +611,7 @@ class PartialClassParser extends BaseParser
 
 		trace("method.field.name", method.field.name);
 
-		var parentExpr = exprStack[exprStack.length-2];
+		var parentExpr = exprStack[exprStack.length-1];
 		
 		if (isEBlock(parentExpr))
 		{
@@ -433,232 +661,6 @@ class PartialClassParser extends BaseParser
 		return exprs;
 	}
 
-	function parse(expr:Expr):Expr
-	{
-		switch(expr.expr)
-		{
-			case EContinue: null;
-			case EBreak: null;
-			case EConst(c): null;//i.e. any constant (string, type, int, regex, ident (local var ref))
-			case EFunction(name, f): 
-			{
-				//e.g. var f = function()
-				functionStack.push(f);
-				f.expr = parseExpr(f.expr);
-				expr.expr = EFunction(name, f);
-				functionStack.pop();
-			}
-			case EDisplayNew(t): null;  //no idea what this is??
-			case EDisplay(e, isCall):
-			{
-				//no idea what this is???
-				e = parseExpr(e);
-				expr.expr = EDisplay(e, isCall);
-			}
-			case ECast(e, t):
-			{
-				// cast(foo, Foo);
-				e = parseExpr(e);
-				expr.expr = ECast(e, t);
-			}
-			case EIf(econd, eif, eelse):
-			{
-				//e.g. if (){}else{}
-				parseEIf(expr, econd, eif, eelse);
-			}
-		
-			case ESwitch(e, cases, edef):
-			{	
-				parseESwitch(expr, e, cases, edef);
-			}
-			case ETry(e, catches):
-			{
-				//e.g. try{...}catch(){}
-				parseExpr(e);
-				for (c in catches)
-				{
-					parseExpr(c.expr);
-				}
-			}
-			case EThrow(e): 
-			{
-				//e.g. throw "ARRGH!"
-				e = parseExpr(e);
-				expr.expr = EThrow(e);
-			}
-			case EWhile(econd, e, normalWhile):
-			{
-				//e.g. while(i<2){}
-				econd = parseExpr(econd);
-				e = parseExpr(e);
-				expr.expr = EWhile(econd, e, normalWhile);
-			}
-			case EField(e, field):
-			{
-				//e.g. isFoo
-				e = parseExpr(e);
-				expr.expr = EField(e, field);
-			}
-			case EParenthesis(e): 
-			{
-				//e.g. (...)
-				e = parseExpr(e);
-				expr.expr = EParenthesis(e);
-			}
-			
-			case ENew(t, params):
-			{
-				//e.g. new Foo();
-				params = parseExprs(params);
-				expr.expr = ENew(t, params);
-			}
-			
-			case EType(e, field):
-			{
-				//e.g. Foo.bar;
-				e = parseExpr(e);
-				expr.expr = EType(e, field);
-
-			}
-			case ECall(e, params):
-			{
-				//e.g. method(); 
-
-				// e = parseExpr(e);
-				// params = parseExprs(params);
-				// expr.expr = ECall(e, params);
-
-				parseECall(expr, e, params);
-			}
-			case EReturn(e):
-			{
-				//e.g. return foo;
-				e = parseExpr(e);
-				expr.expr = EReturn(e);
-			}
-			case EVars(vars):
-			{
-				//e.g. var i = xxx;
-				for (v in vars)
-				{
-					v.expr = parseExpr(v.expr);
-				}
-			}
-			case EBinop(op, e1, e2):
-			{
-				//e.g. i<2; a||b, i==b
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EBinop(op, e1, e2);
-			}
-			case EUnop(op,postFix,e):
-			{
-				//e.g. i++;
-				e = parseExpr(e);
-				expr.expr = EUnop(op, postFix, e);
-			}
-			case ETernary(econd, eif, eelse): 
-			{
-				//e.g. var n = (1 + 1 == 2) ? 4 : 5;
-				parseETernary(expr, econd, eif, eelse);
-			}
-			case EObjectDecl(fields):
-			{
-				//e.g. var o = { a:"a", b:"b" }
-				for (f in fields)
-				{
-					parseExpr(f.expr);
-				}
-			}
-			case EFor(it, e):
-			{
-				//e.g. for (i in 0...5){}
-				it = parseExpr(it);
-				e = parseExpr(e);
-				expr.expr = EFor(it, e);
-			}
-			case EIn(e1, e2):
-			{
-				//e.g. for (i in 0...5){}
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EIn(e1, e2);
-			}
-			case EArrayDecl(values):
-			{
-				//e.g. a = [1,2,3];
-				for (v in values)
-				{
-					v = parseExpr(v);
-				}
-			}
-			case EArray(e1, e2):
-			{
-				//not sure dif with EArrayDecl
-				e1 = parseExpr(e1);
-				e2 = parseExpr(e2);
-				expr.expr = EArray(e1, e2);
-			}
-			case EBlock(exprs): 
-			{
-				//array of expressions e.g. {...}
-				exprs = parseExprs(exprs);
-				expr.expr = EBlock(exprs);
-
-			}
-			case EUntyped(e1): null;//don't want to mess around with untyped code
-			default: trace(expr.expr);
-		}
-		return expr;
-	}
-
-	function parseEIf(expr:Expr, econd:Expr, eif:Expr, eelse:Expr)
-	{
-		econd = parseExpr(econd);
-		eif = parseExpr(eif);
-		eelse = parseExpr(eelse);
-		expr.expr = EIf(econd, eif, eelse);
-	}
-
-	function parseESwitch(expr:Expr, e:Expr, cases: Array<{ values : Array<Expr>, expr : Expr }>, edef:Null<Expr>)
-	{
-		e = parseExpr(e);
-
-		for (c in cases)
-		{
-			c.values = parseExprs(c.values);
-			c.expr = parseExpr(c.expr);	
-		}
-
-		edef = parseExpr(edef);
-		expr.expr = ESwitch(e, cases, edef);
-	}
-
-	function parseETernary(expr:Expr, econd:Expr, eif:Expr, eelse:Expr)
-	{
-		econd = parseExpr(econd);
-		eif = parseExpr(eif);
-		eelse = parseExpr(eelse);
-		expr.expr = ETernary(econd, eif, eelse);
-	}
-
-	/////////
-
-	/**
-	parses an array of expressions
-
-	@return updated array of expressions
-	*/
-	public function parseExprs(exprs:Array<Expr>):Array<Expr>
-	{
-		var temp:Array<Expr> = exprs.concat([]);
-
-		for (expr in temp)
-		{
-			expr = parseExpr(expr);
-		}
-		return exprs;
-	}
 }
 
 #end

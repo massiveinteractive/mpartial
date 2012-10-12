@@ -2,5 +2,6 @@
 --no-output
 -D macro
 -lib mconsole
+-lib tink_macros
 -cp src
 mpartial.PartialsMacro

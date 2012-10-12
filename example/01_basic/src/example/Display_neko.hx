@@ -20,11 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
-/**
-Interface for class expecting partial implementations.
+class Display_neko
+{
+	@:partialAppend
+	public function new()
+	{
+		Sys.println("    NEKO: create new Display");
+	}	
 
-Triggers the build macro for a Partial Class
-*/
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+	@:partialAppend
+	function redraw()
+	{
+		var str = "{x:" + x + ", y:" + y + ", width:" + width + ", height:" + height + "}";
+		Sys.println("    NEKO: redraw " + str);
+	}
+}

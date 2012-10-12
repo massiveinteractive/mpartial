@@ -13,4 +13,4 @@ gen-partials
 example/01_basic/build
 example/02_metadata/build
 example/03_properties/build
-example/04_aspect/build
+example/04_metadata_config/build

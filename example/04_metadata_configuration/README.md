@@ -44,7 +44,12 @@ Simple example
 	@:partials(SomeClass, SomeFragment)
 	class Example implements mpartial.Partial
 	{
+		public var foo = "foo";
 
+		public function new()
+		{
+
+		}
 	}
 
 	class SomeClass
@@ -54,7 +59,10 @@ Simple example
 
 	class SomeFragment implements mpartial.PartialFragment
 	{
-		public var bar:Bool = true;
+		public function new()
+		{
+			foo = "bar";//reference to field in target class
+		}
 	}
 
 

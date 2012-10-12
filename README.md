@@ -1,19 +1,36 @@
 ## Overview
 
-It is a Haxe macro utility for working with partial code and classes.
+MPartial is a Haxe macro utility for working with partials. Supports AVM2, JavaScript, Neko and C++.
 
-**Features**
+* Separate platform specific logic into separate class fragments (e.g. Display, Display_js, Display_neko)
+* Duplicate the fields of one class in another
+* Override, append or replace individual fields using a class fragment containing partial @metadata
+* Define partial contracts via simple interfaces
 
-- inject fields from one class into another class during compilation
-- override/append/replace fields within a target class based on compilation flags/platform
+**Installation**
+
+Install mpartial from haxelib:
+
+	haxelib install mpartial
+
+Or if you want to install the latest directly from github:
+
+	haxelib git mpartial https://github.com/massiveinteractive/mpartial.git src/lib
+
+And to point to your local fork:
+
+	haxelib dev mpartial /ABSOLUTE_PATH_TO_REPO/src/lib
+
 
 **Terminology**
 
-- **Partial Target** A host target class that implements `mpartial.Partial`. 
-- **Partial Fragment** An incomplete class fragment to inject into a Partial Target. May explicitly implement `mpartial.PartialFragment`
-- **Platform Fragment** A fragment associated with the current Haxe platform (e.g. `Example_js`)
-- **Macro Fragment** A custom platform fragment defined via macros (e.g. `--macro mpartial.PartialsMacro.append`)
-- **Metadata Fragment** A fragment defined via class metadata (e.g. `@:mpartial(SomePartial)`)   
+Term|Definition
+------------------|-----
+Partial Target | A host target class that implements `mpartial.Partial`. 
+Partial Fragment | An incomplete class fragment to inject into a Partial Target. May explicitly implement `mpartial.PartialFragment`
+*Platform* Fragment |A fragment associated with the current Haxe platform (e.g. `Example_js`)
+*Macro* Fragment | A custom platform fragment defined via macros (e.g. `--macro mpartial.PartialsMacro.append`)
+*Metadata* Fragment | A fragment defined via class metadata (e.g. `@:mpartial(SomePartial)`)   
 
 **Approaches**
 

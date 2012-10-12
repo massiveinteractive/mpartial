@@ -20,11 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
 /**
-Interface for class expecting partial implementations.
-
-Triggers the build macro for a Partial Class
+Example contains custom mapped partials using the @:partials class metadata.
 */
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+
+//note: cannot use <T> inside metadata tag
+typedef IntValidator = example.Validator<Int>;
+
+@:partials(State, IntValidator, SomePartialFragment)
+class Example implements mpartial.Partial, implements Stateful
+{
+	public var value:Int = 0;
+
+	public function new()
+	{
+		
+	}
+
+	public function reset()
+	{
+		//do something
+	}
+}

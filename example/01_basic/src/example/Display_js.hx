@@ -20,11 +20,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
-/**
-Interface for class expecting partial implementations.
+import js.Lib;
+import js.Dom;
+import haxe.xml.Fast;
 
-Triggers the build macro for a Partial Class
-*/
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+class Display_js
+{
+	public var element:HtmlDom;
+
+	@:partialAppend
+	public function new()
+	{
+		var x = Fast;
+		var z = Lib.document;
+		element = Lib.document.createElement("div");
+		// element.style.position = "absolute";
+		// element.style.backgroundColor="#CCCCCC";
+		// Lib.document.body.appendChild(element);
+	}
+
+	@:partialAppend
+	function redraw()
+	{
+		// element.style.marginTop = x + "px";
+		// element.style.marginLeft = y + "px";
+		// element.style.width = width + "px";
+		// element.style.height = height + "px";
+	}
+}

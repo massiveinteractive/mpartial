@@ -20,11 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
 
-/**
-Interface for class expecting partial implementations.
+class Main
+{
+	static public function main()
+	{
+		var display = new example.SubDisplay();
+		display.x = 10;
+		display.y = 10;
+		display.width = 200;
+		display.height = 150;
 
-Triggers the build macro for a Partial Class
-*/
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+		#if debug
+		Console.assert(display.debug, "display.debug should be true");
+		#else
+		Console.assert(!display.debug, "display.debug should be false");
+		#end
+
+
+		#if js
+		Console.assert(display.element != null, "display.element should not be null in js target");
+		#elseif swf
+		Console.assert(display.sprite != null, "display.sprite should not be null in swf target");
+		#end
+	}
+}

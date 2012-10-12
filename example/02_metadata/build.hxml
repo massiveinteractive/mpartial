@@ -1,0 +1,8 @@
+-main Main
+-neko build/main.n
+-lib mpartial
+-lib tink_macros
+-cp src
+-debug
+--macro mpartial.PartialsMacro.configure(['foo','bar'])
+-cmd neko build/main.n

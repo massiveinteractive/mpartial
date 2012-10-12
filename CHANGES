@@ -1,3 +1,11 @@
+1.1.0
+- added support for partial wiring using @:partial class metadata
+- added PartialFragment interface for incomplete class types
+- added support for using existing classes as partial fragment
+- major internal refactor to remove need to generating temporary classes for partial fragments
+- added dependency on tink_macros for complex/type conversions
+- added example for @:partial configuration
+
 1.0.1
 - Hot fix for generating temp directory on new projects
 

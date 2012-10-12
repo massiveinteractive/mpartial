@@ -32,7 +32,7 @@ import haxe.PosInfos;
 Data type representing a method in a class.
 Includes utilities for checking method level partials metadata 
 */
-class MethodHelper
+class MethodHelper extends MemberHelper
 {
 	
 	public inline static var META_APPEND:String = ":partialAppend";
@@ -41,7 +41,6 @@ class MethodHelper
 	public inline static var META_INLINED:String = ":partialInline";
 	public inline static var META_INSERT_AT:String = ":partialInsertAt";
 
-	public var field:Field;
 	public var f:Function;
 
 	public var isAppend(default, null):Bool;
@@ -53,11 +52,11 @@ class MethodHelper
 
 	public var hasPartialImplementationMetadata(default, null):Bool;
 
-	var qualifiedClassName:String;
 
-	public function new(field:Field, f:Function, qualifiedClassName:String)
+	public function new(field:Field, f:Function, className:String)
 	{
-		this.field = field;
+		super(field, className);
+
 		this.f = f;
 
 		isAppend = false;
@@ -71,17 +70,18 @@ class MethodHelper
 
 		if (isInlined && !isStrictInlined()) 
 		{
-			Context.warning("@" + MethodHelper.META_INLINED + " does not support methods with parameters or arguments. " + qualifiedClassName + "." + field.name, f.expr.pos);
+			Context.warning("@" + MethodHelper.META_INLINED + " does not support methods with parameters or arguments. " + location, f.expr.pos);
 			
 			field.access.remove(AInline);
 			field.access.push(AInline);
 
-			Context.warning("Converting method " + field.name + " to standard haxe inline accesor.", f.expr.pos);
+			Context.warning("Converting method " + name + " to standard haxe inline accesor.", f.expr.pos);
 		}
 	}
 
 	function parseMetadata(meta:Metadata)
 	{
+		if(meta == null) return;
 		for (item in meta)
 		{
 			switch(item.name.toLowerCase())
@@ -124,7 +124,7 @@ class MethodHelper
 
 	function invalidMetadata(meta:String)
 	{
-		Context.error("Unexpected metadata argument for @" + meta + " at " + field.name, Context.currentPos());
+		error("Unexpected metadata argument for @" + meta + " at " + name);
 	}
 
 	public function getExprs():Array<Expr>

@@ -1,8 +1,9 @@
 <project name="mpartial" url="http://github.com/massiveinteractive/mpartial" license="MIT">
 	<user name="massive"/>
-	<description>A Haxe macro library for implementing platform specific partial classes, simplifying cross platform code. Supports AVM1, AVM2, JavaScript, Neko and C++.</description>
-	<version name="1.0.1">Hot fix for generating temp directory</version>
+	<description><![CDATA[A Haxe macro library for working with Partials. Supports AVM1, AVM2, JavaScript, Neko and C++.]]></description>
+	<version name="1.1.0"><![CDATA[Added support for class specific partial fragments via class metadata (e.g. @:partial(Foo, Bar))]]></version>
 	<depends name="mconsole"/>
+	<depends name="tink_macros"/>
 	<tag v="macro"/>
 	<tag v="cross"/>
 	<tag v="utility"/>

@@ -8,8 +8,9 @@
 gen-partials
 .DS_Store
 
-/example/basic/build/
-/example/metadata/build/
 .mcover
-/example/properties/build/
 .temp
+example/01_basic/build
+example/02_metadata/build
+example/03_properties/build
+example/04_metadata_config/build

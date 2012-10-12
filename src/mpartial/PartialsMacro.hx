@@ -28,20 +28,18 @@ import haxe.macro.Type;
 import haxe.macro.Context;
 import haxe.macro.Compiler;
 import mpartial.parser.PartialClassParser;
-import mpartial.parser.PartialImplementationParser;
+import mpartial.parser.ClassParser;
+import mpartial.parser.FragmentClassParser;
 import msys.File;
 import msys.Directory;
 import haxe.PosInfos;
 
-
 class PartialsMacro
 {
 	public static var TEMP_DIR:String = ".temp/mpartial/";
-	public static var SRC_DIR:String = ".temp/mpartial/";
 
 	static var initialized:Bool = false;
 	static var appendTargets:Bool = false;
-	static var keepGenerated:Bool = true;
 		
 	/**
 	Default targets based on haxe compiler flags
@@ -52,12 +50,17 @@ class PartialsMacro
 	Custom targets defined in compiler macro (configure or append)
 	*/
 	static var customTargets:Array<String> = [];
-	static var classParser:PartialClassParser;
 
 	/**
 	Aggregated targets based on configuration
 	*/
 	static var targets:Array<String> = [];
+
+	/**
+	hash of already parsed class fields
+	*/
+	static var classMap:Hash<Array<Field>> = new Hash();
+
 
 	/**
 	Configure macro to include specific partial implementations.
@@ -66,19 +69,14 @@ class PartialsMacro
 	Usage:
 		--macro mpartial.PartialsMacro.configure(['flash', 'debug', 'foo'])
 
-	To use default targets but keep generated classes
-
-		--macro mpartial.PartialsMacro.configure([], true)
-
+	Note: keepGenerated is no longer required.
 	Note: debug partials are automatically added if the -debug compiler flag is set
 
 	*/
-	public static function configure(targets:Array<String>, ?keepGenerated:Bool=false)
+	public static function configure(targets:Array<String>, ?keepGenerated:Null<Bool>)
 	{
-		if (keepGenerated)
-		{
-			keepGeneratedClasses();
-		}
+		if(keepGenerated != null)
+			Sys.println("'keepGenerated' is depricated for '--macro mpartial.PartialsMacro.configure'");
 
 		for(target in targets)
 		{
@@ -97,22 +95,17 @@ class PartialsMacro
 	Usage:
 		--macro mpartial.PartialsMacro.append(['foo'])
 
-	To keep generated classes
-
-		--macro mpartial.PartialsMacro.configure(['foo'], true)
-
+	Note: keepGenerated is depricated
 	Note: debug partials are automatically added if the -debug compiler flag is set
 
 	*/
-	public static function append(targets:Array<String>, ?keepGenerated:Bool=false)
+	public static function append(targets:Array<String>, ?keepGenerated:Null<Bool>)
 	{
+		if(keepGenerated != null)
+			Sys.println("'keepGenerated' is depricated for '--macro mpartial.PartialsMacro.configure'");
+
 		appendTargets = true;
 
-		if (keepGenerated)
-		{
-			keepGeneratedClasses();
-		}
-		
 		for(target in targets)
 		{
 			if(target != "" && target != null)
@@ -124,17 +117,13 @@ class PartialsMacro
 	}
 
 	/**
-	Instruct macro to not deleted generated partial classes after compilation.
-	
-	During the compilation process, PartialsMacro fully expands qualified references
-	within partial implementations and renames them to valid Haxe classes
-
-	Usage:
-		--macro mpartial.PartialsMacro.keepGeneratedClasses()
+	Depricated macro for keeping generated classes.
+	As of 1.1, mpartials does not need to generate classes for partial fragments.
 	*/
+	@:depricated
 	public static function keepGeneratedClasses()
 	{
-		keepGenerated = true;
+		Sys.println("'keepGeneratedClasses' is depricated for '--macro mpartial.PartialsMacro'");
 	}
 
 	static function init()
@@ -144,7 +133,6 @@ class PartialsMacro
 		initialized = true;
 		
 		Directory.create(TEMP_DIR);
-		Directory.create(SRC_DIR);
 
 		Console.addPrinter(new FilePrinter(TEMP_DIR + "mpartial.log"));
 
@@ -170,8 +158,6 @@ class PartialsMacro
 			targets.push("debug");
 		}
 
-		Compiler.addClassPath(SRC_DIR);
-
 		Console.start();
 		Console.removePrinter(Console.defaultPrinter);
 		
@@ -190,38 +176,18 @@ class PartialsMacro
 	static function createDefaultTargets():Array<String>
 	{
 		var targets:Array<String> = [];
-
-		if (Context.defined("js"))
+		
+		if (Context.defined("flash"))
 		{
-			targets.push("js");
+			if (Context.defined("flash8")) targets.push("flash8");
+			else targets.push("flash");
 		}
-		else if (Context.defined("flash"))
-		{
-			if (Context.defined("flash8"))
-				targets.push("flash8");
-			else
-				targets.push("flash");
-		}
-		else if (Context.defined("neko"))
-		{
-			targets.push("neko");
-		}
-		else if (Context.defined("cpp"))
-		{
-			targets.push("cpp");
-		}
-		else if (Context.defined("php"))
-		{
-			targets.push("php");
-		}
-		else if (Context.defined("java"))
-		{
-			targets.push("java");
-		}
-		else if (Context.defined("cs"))
-		{
-			targets.push("cs");
-		}
+		else if (Context.defined("js")) targets.push("js");
+		else if (Context.defined("neko")) targets.push("neko");
+		else if (Context.defined("cpp")) targets.push("cpp");
+		else if (Context.defined("php")) targets.push("php");
+		else if (Context.defined("java")) targets.push("java");
+		else if (Context.defined("cs")) targets.push("cs");
 		
 		return targets;
 		
@@ -238,48 +204,49 @@ class PartialsMacro
 	}
 
 	/**
-	Build macro generated for generated partial implementation classes.
-	Not to be called directly.
-	*/
-	@:macro public static function buildImplementation(expr:Expr):Array<Field>
-	{
-		return appendToPartialClass(classParser);
-	}
-
-
-	/**
 	Parses a class and any associated partial implementations
 	*/
 	public static function createPartialClass(?fields:Array<Field>, ?force:Bool=false):Array<Field>
 	{
 		init();
 
-		classParser = new PartialClassParser(fields, force);
-		classParser.build(targets);
+		var parser = new PartialClassParser(fields, force);
 
-		return classParser.fields;
+		if(classMap.exists(parser.id))
+		{
+			//prevents macro being re-run the same class
+			return null;
+		}
+		
+		parser.classMap = classMap;
+		parser.build(targets);
+		classMap.set(parser.id, parser.fields);
+		return parser.fields;
 	}
 
 	/**
-	Parses the contents of a partial implementation and appends fields to the
-	base class. Removes the stub class from compilation once finished.
-	*/
-	public static function appendToPartialClass(classParser:PartialClassParser):Array<Field>
-	{
-		var implementationParser = new PartialImplementationParser();
-		implementationParser.appendTo(classParser);
+	Build macro triggered by mpartial.PartialFragment interface.
+	Stores the fields of a class in the <code>classMap</code> hash and
+	removes type from further compilation
 
-		Compiler.exclude(implementationParser.qualifiedClassName, false);
+	@returns empty field array
+	*/
+	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
+	{
+		init();
+		
+		var parser = new FragmentClassParser();
+
+		if(!classMap.exists(parser.id))
+			classMap.set(parser.id, parser.getFields());
+
+		Compiler.exclude(parser.id, false);
 		return [];
 	}
 
+
 	static function onGenerate(types : Array<Type> ) : Void
 	{
-		if (!keepGenerated)
-		{
-			File.remove(SRC_DIR);
-			File.remove(TEMP_DIR);
-		}
 	}
 }
 
@@ -292,28 +259,6 @@ class FilePrinter extends mconsole.FilePrinter
 	{
 		File.remove(path);
 		super(path);
-	}
-
-	override function printLine(color:mconsole.Printer.ConsoleColor, line:String, pos:PosInfos)
-	{
-		if(StringTools.startsWith(line, "@"))
-		{
-			var a = line.split(".");
-			while(a.length > 2)
-			{
-				a.shift();
-			}
-
-			if(currentClass != a[0])
-			{
-				currentClass = a[0];
-				super.printLine(color,"@" + currentClass, pos);
-			}
-			
-			currentMethod = a[1];
-		}
-		else
-			super.printLine(color," " + currentMethod + line,pos);
 	}
 }
 

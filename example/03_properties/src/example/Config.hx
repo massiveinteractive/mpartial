@@ -20,11 +20,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package mpartial;
+package example;
 
-/**
-Interface for class expecting partial implementations.
+class Config implements mpartial.Partial
+{
+	//-------------------------------------------------------------------------- public static accessors
 
-Triggers the build macro for a Partial Class
-*/
-@:autoBuild(mpartial.PartialsMacro.build()) interface Partial {}
+	static public var s1:Bool = false;
+	inline public static var s2:Bool = false; 
+
+	//-------------------------------------------------------------------------- private static accessors
+
+	static var s3:Bool = false;
+	inline static var s4:Bool = false;
+
+	//-------------------------------------------------------------------------- public accessors
+	public var a:Bool;
+	public var b:Bool = false;
+
+	public var c(default, null):Bool;
+	
+	public var d(get_d, set_d):Bool;
+
+	function get_d():Bool{
+		return false;
+	}
+	function set_d(value:Bool):Bool
+	{
+		d = value;
+		return d;
+	}
+
+	//-------------------------------------------------------------------------- private accessors
+
+	var e:Bool = false;
+
+	@:partialFinal
+	var f:Bool = false;
+	
+
+	public function new()
+	{
+		
+	}
+
+}

@@ -35,11 +35,15 @@ class Macros
 	*/
 	public static function qualifyComplexTypePath(complexType:ComplexType):ComplexType
 	{
-		switch(complexType.toType())
+		if(complexType != null)
 		{
-			case Success(type):
-				return type.toComplex(true);
-			case Failure(f): throw f;
+			switch(complexType.toType())
+			{
+				case Success(type):
+					trace(type);
+					return type.toComplex(true);
+				case Failure(f): throw f;
+			}
 		}
 		return complexType;
 	}

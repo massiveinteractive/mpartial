@@ -30,9 +30,11 @@ import haxe.macro.Compiler;
 import mpartial.parser.PartialClassParser;
 import mpartial.parser.ClassParser;
 import mpartial.parser.FragmentClassParser;
-import msys.File;
-import msys.Directory;
 import haxe.PosInfos;
+
+import sys.io.File;
+import sys.FileSystem;
+
 
 class PartialsMacro
 {
@@ -132,9 +134,11 @@ class PartialsMacro
 
 		initialized = true;
 		
-		Directory.create(TEMP_DIR);
+		if(!FileSystem.exists(TEMP_DIR)) FileSystem.createDirectory(TEMP_DIR);
 
+		Console.removePrinter(Console.defaultPrinter);
 		Console.addPrinter(new FilePrinter(TEMP_DIR + "mpartial.log"));
+		Console.start();
 
 		defaultTargets = createDefaultTargets();
 
@@ -158,9 +162,6 @@ class PartialsMacro
 			targets.push("debug");
 		}
 
-		Console.start();
-		Console.removePrinter(Console.defaultPrinter);
-		
 		trace("default targets", defaultTargets);
 		trace("custom targets", customTargets);
 		trace("final targets", targets);
@@ -252,13 +253,20 @@ class PartialsMacro
 
 class FilePrinter extends mconsole.FilePrinter
 {
-	var currentClass:String;
-	var currentMethod:String; 
-
 	public function new(path:String)
 	{
-		File.remove(path);
+		if(FileSystem.exists(path))
+			FileSystem.deleteFile(path);
 		super(path);
+	}
+
+	/**
+	Fiters out any logs outside of current package.
+	*/
+	override public function print(level: mconsole.LogLevel, params:Array<Dynamic>, indent:Int, pos:haxe.PosInfos):Void
+	{
+		if(StringTools.startsWith(pos.className, "mpartial"))
+			super.print(level, params, indent, pos);
 	}
 }
 

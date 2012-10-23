@@ -70,15 +70,7 @@ class Build extends mtask.core.BuildBase
 				
 		}
 	}
-
-	@task function release()
-	{
-		invoke("clean");
-		invoke("test");
-		invoke("build haxelib");
-		invoke("build example");
-	}
-
+	
 	@task function sublime()
 	{
 		invoke("debug example");
@@ -88,5 +80,14 @@ class Build extends mtask.core.BuildBase
 	@task function test()
 	{
 		cmd("haxelib", ["run", "munit", "test", "-coverage"]);
+	}
+
+	@task function teamcity()
+	{
+		invoke("test");
+		cmd("haxelib", ["run", "munit", "report", "teamcity"]);
+		
+		invoke("build haxelib");
+		invoke("build example");
 	}
 }

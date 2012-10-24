@@ -1,18 +1,22 @@
+-cmd rm -rf bin
+-cmd mkdir -p bin
+--next
+
 -main Main
--neko build/main.n
+-neko bin/main.n
 -lib mpartial
 -lib tink_macros
 -cp src
--cmd neko build/main.n
+-cmd neko bin/main.n
 
  --next
 
 -main Main
--neko build/main-debug.n
+-neko bin/main-debug.n
 -lib mpartial
 -lib tink_macros
 -cp src
 -debug
 
 -cmd echo "--- debug ---"
--cmd neko build/main-debug.n
+-cmd neko bin/main-debug.n

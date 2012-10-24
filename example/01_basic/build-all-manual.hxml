@@ -1,6 +1,9 @@
+-cmd rm -rf bin
+-cmd mkdir -p bin
+--next
 
 -main Main
--swf build/main.swf
+-swf bin/main.swf
 -swf-version 10
 -swf-header 1024:769:60:FFFFFF
 -lib mpartial
@@ -12,7 +15,7 @@
 --next
 
 -main Main
--js build/main.js
+-js bin/main.js
 -lib mpartial
 -lib tink_macros
 -cp src
@@ -22,11 +25,11 @@
 --next
 
 -main Main
--neko build/main.n
+-neko bin/main.n
 -lib mpartial
 -lib tink_macros
 -cp src
 -debug
 --macro mpartial.PartialsMacro.append(['foo'])
 
--cmd neko build/main.n
+-cmd neko bin/main.n

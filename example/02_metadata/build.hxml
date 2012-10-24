@@ -1,8 +1,11 @@
+-cmd rm -rf bin
+-cmd mkdir -p bin
+--next
 -main Main
--neko build/main.n
+-neko bin/main.n
 -lib mpartial
 -lib tink_macros
 -cp src
 -debug
 --macro mpartial.PartialsMacro.configure(['foo','bar'])
--cmd neko build/main.n
+-cmd neko bin/main.n

@@ -1,5 +1,9 @@
+-cmd rm -rf bin
+-cmd mkdir -p bin
+--next
+
 # -main Main
-# -swf build/main.swf
+# -swf bin/main.swf
 # -swf-version 10
 # -swf-header 1024:769:60:FFFFFF
 # -lib mpartial
@@ -8,7 +12,7 @@
 # --next
 
 # -main Main
-# -js build/main.js
+# -js bin/main.js
 # -cp src
 # -lib mpartial
 # -debug
@@ -17,18 +21,18 @@
 # --next
 
 -main Main
--neko build/main.n
+-neko bin/main.n
 -lib mpartial
 -lib tink_macros
 -cp src
 -debug
--cmd neko build/main.n
+-cmd neko bin/main.n
 
 # --next
 
 # -main Main
-# -cpp build/main_cpp
+# -cpp bin/main_cpp
 # -lib mpartial
 # -cp src
 # -debug
-# -cmd build/main_cpp/Main-debug
+# -cmd bin/main_cpp/Main-debug

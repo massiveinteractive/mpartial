@@ -58,15 +58,15 @@ class Build extends mtask.core.BuildBase
 		{
 			mkdir(path);
 			cp("example/*", path);
-			rm(path + "/01_basic/build");
-			rm(path + "/02_metadata/build");
-			rm(path + "/03_properties/build");
-			rm(path + "/04_metadata_configuration/build");
+			rm(path + "/01_basic/bin");
+			rm(path + "/02_metadata/bin");
+			rm(path + "/03_properties/bin");
+			rm(path + "/04_metadata_configuration/bin");
 
-			mkdir(path + "/01_basic/build");
-			mkdir(path + "/02_metadata/build");
-			mkdir(path + "/03_properties/build");
-			mkdir(path + "/04_metadata_configuration/build");
+			mkdir(path + "/01_basic/bin");
+			mkdir(path + "/02_metadata/bin");
+			mkdir(path + "/03_properties/bin");
+			mkdir(path + "/04_metadata_configuration/bin");
 				
 		}
 	}
@@ -81,7 +81,11 @@ class Build extends mtask.core.BuildBase
 
 	@task function sublime()
 	{
-		invoke("debug example");
+		//invoke("debug example");
+		invoke("clean");
+		invoke("build haxelib");
+		cmd("haxelib", ["test", "bin/release/haxelib.zip"]);
+		
 	}
 
 

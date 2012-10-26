@@ -49,13 +49,13 @@
 --next
 
 ## CPP
-# -main TestMain
-# -lib munit
-# -lib hamcrest
-# -lib mconsole
-# -cp src
+-main TestMain
+-lib munit
+-lib hamcrest
+-lib mconsole
+-cp src
 
-# -cp test
-# -cpp bin/test/cpp_test
+-cp test
+-cpp bin/test/cpp_test
 
 

@@ -20,58 +20,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package example.platform;
+package example;
 
-class Example_neko
+@:partials(SomeClass, SomeFragment)
+class Example implements mpartial.Partial
 {
-	public var target:String;
+	public var property:String;
 
-	@:partialAppend
+	public var flag:String = "none";
+
+	public var targets:Array<String>;
+	public var values:Array<String>;
+	
 	public function new()
 	{
-		target = "neko";
+		property = "property";
+		values = [];
 	}
 
-	@:partialAppend
+	public function reset()
+	{
+		values = [];
+	}
+
 	public function append()
 	{
-		values.push(target);
+		values.push("one");
+		values.push("two");
+		values.push("three");
 	}
 
-
-	@:partialReplace
 	public function replace()
 	{
-		values = [target];
+		values.push("one");
+		values.push("two");
+		values.push("three");
 	}
 
-	@:partialInsertAt(0)
 	public function insertBefore()
 	{
-		values.push(target);
+		values.push("one");
+		values.push("two");
+		values.push("three");
 	}
 
-	@:partialInsertAt(1)
 	public function insertAfterFirst()
 	{
-		values.push(target);
+		values.push("one");
+		values.push("two");
+		values.push("three");
 	}
 
-	@:partialInsertAt(-1)
 	public function insertBeforeLast()
 	{
-		values.push(target);
+		values.push("one");
+		values.push("two");
+		values.push("three");
 	}
 
-	@:partialAppend
+	@:partialFinal
+	public function finaled()
+	{
+
+	}
+
+	public function inlined()
+	{
+		inlinedPartial();
+	}
+
+	@:partialInline
+	public function inlinedPartial()
+	{
+		values.push("inline");
+	}
+
 	public function withDynamicArgs(a:Dynamic)
 	{
-		var value:String = Std.string(a);
-		targetWithDynamicArgs(value);
+
 	}
 
-	function targetWithDynamicArgs(a:Dynamic)
-	{
-		values.push(Std.string(a));
-	}
 }

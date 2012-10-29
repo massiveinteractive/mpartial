@@ -10,7 +10,7 @@ import massive.munit.async.AsyncFactory;
 */
 class PlatformFragmentTest 
 {
-	var example:example.platform.Example;
+	var example:example.Example;
 	var flag:String;
 	var target:String;
 
@@ -33,7 +33,7 @@ class PlatformFragmentTest
 	public function setup():Void
 	{
 		flag = "platform";
-		example = new example.platform.SubExample();
+		example = new example.SubExample();
 
 		target = example.target;
 	}
@@ -92,13 +92,19 @@ class PlatformFragmentTest
 		verifyArrays(expected, example.values);
 	}
 
+
 	@Test
-	public function should_keep_dynamic_args()
+	public function should_have_someProperty():Void
 	{
-		example.withDynamicArgs(1);
-		var expected = ["1"];
-		verifyArrays(expected, example.values);
+		Assert.areEqual(1, example.someProperty);
 	}
+
+		@Test
+	public function should_have_someFragmentProperty():Void
+	{
+		Assert.areEqual("p_r_o_p_e_r_t_y", example.someFragmentProperty);
+	}
+
 
 
 	function verifyArrays(expected:Array<String>, actual:Array<String>, ?pos:haxe.PosInfos)

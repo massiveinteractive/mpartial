@@ -20,20 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package example.platform;
+package example;
 
-import js.Lib;
-import js.Dom;
-import haxe.xml.Fast;
-
-class Example_js
+class Example_neko
 {
 	public var target:String;
 
 	@:partialAppend
 	public function new()
 	{
-		target = "js";
+		target = "neko";
 	}
 
 	@:partialAppend
@@ -54,6 +50,7 @@ class Example_js
 	{
 		values.push(target);
 	}
+
 	@:partialInsertAt(1)
 	public function insertAfterFirst()
 	{

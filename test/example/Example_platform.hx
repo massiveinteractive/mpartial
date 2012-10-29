@@ -1,11 +1,13 @@
-package example.platform;
+package example;
 
 class Example_platform
 {
+	@:partialReplace
+	public var flag:String = "platform";
+
 	@:partialAppend
 	public function new()
 	{
-		flag = "platform";
 	}
 
 	@:partialAppend

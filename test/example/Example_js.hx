@@ -20,18 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package example.platform;
+package example;
 
-import flash.display.Sprite;
+import js.Lib;
+import js.Dom;
+import haxe.xml.Fast;
 
-class Example_flash
+class Example_js
 {
 	public var target:String;
 
 	@:partialAppend
 	public function new()
 	{
-		target = "flash";
+		target = "js";
 	}
 
 	@:partialAppend
@@ -52,7 +54,6 @@ class Example_flash
 	{
 		values.push(target);
 	}
-
 	@:partialInsertAt(1)
 	public function insertAfterFirst()
 	{
@@ -65,15 +66,23 @@ class Example_flash
 		values.push(target);
 	}
 
-		@:partialAppend
-	public function withDynamicArgs(a:Dynamic)
+
+	// issue where dynamic typed values are converted to a specific value
+
+	function addInt()
 	{
-		var value:String = Std.string(a);
-		targetWithDynamicArgs(value);
+		var foo = {bar:1};
+		add(foo);
 	}
 
-	function targetWithDynamicArgs(a:Dynamic)
+	function addString()
 	{
-		values.push(Std.string(a));
+		var foo = {x:1, y:2};
+		add(foo);
+	}
+
+	function add(value:Dynamic)
+	{
+
 	}
 }

@@ -20,90 +20,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package example.platform;
+package example;
 
-class Example implements mpartial.Partial
+import flash.display.Sprite;
+
+class Example_flash
 {
-	public var someProperty(default, set_someProperty):Int;
+	public var target:String;
 
-	public var flag:String;
-
-	public var targets:Array<String>;
-	public var values:Array<String>;
-	
+	@:partialAppend
 	public function new()
 	{
-		flag = "none";
-		values = [];
-		Reflect.setField(this, "someProperty", 0);
+		target = "flash";
 	}
 
-	public function reset()
-	{
-		values = [];
-	}
-
-	function set_someProperty(value:Int):Int
-	{
-		someProperty = value;
-		return value;
-	}
-
+	@:partialAppend
 	public function append()
 	{
-		values.push("one");
-		values.push("two");
-		values.push("three");
+		values.push(target);
 	}
 
+
+	@:partialReplace
 	public function replace()
 	{
-		values.push("one");
-		values.push("two");
-		values.push("three");
+		values = [target];
 	}
 
+	@:partialInsertAt(0)
 	public function insertBefore()
 	{
-		values.push("one");
-		values.push("two");
-		values.push("three");
+		values.push(target);
 	}
 
+	@:partialInsertAt(1)
 	public function insertAfterFirst()
 	{
-		values.push("one");
-		values.push("two");
-		values.push("three");
+		values.push(target);
 	}
 
+	@:partialInsertAt(-1)
 	public function insertBeforeLast()
 	{
-		values.push("one");
-		values.push("two");
-		values.push("three");
+		values.push(target);
 	}
 
-	@:partialFinal
-	public function finaled()
-	{
-
-	}
-
-	public function inlined()
-	{
-		inlinedPartial();
-	}
-
-	@:partialInline
-	public function inlinedPartial()
-	{
-		values.push("inline");
-	}
-
+		@:partialAppend
 	public function withDynamicArgs(a:Dynamic)
 	{
-
+		var value:String = Std.string(a);
+		targetWithDynamicArgs(value);
 	}
 
+	function targetWithDynamicArgs(a:Dynamic)
+	{
+		values.push(Std.string(a));
+	}
 }

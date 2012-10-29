@@ -1,4 +1,4 @@
-package example.platform;
+package example;
 
 class Example_cpp
 {

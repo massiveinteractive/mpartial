@@ -1,3 +1,7 @@
+1.2.0
+- added support for fragments that are clases with their own inheritance chain
+- fixed issue with dynamic args being being incorrectly typed in generated field
+
 1.1.0
 - added support for partial wiring using @:partial class metadata
 - added PartialFragment interface for incomplete class types

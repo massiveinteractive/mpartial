@@ -11,23 +11,33 @@ class SomeClass extends SomeSuperClass
 		someProperty = 1;
 	}
 
-	// override public function someMethod()
-	// {
-	// 	super.someMethod();
-	// }
+	override public function someMethod(a:Int)
+	{
+		a += 10;
+		super.someMethod(a);
+	}
 }
 
-class SomeSuperClass
+class SomeSuperClass extends SomeSuperDooperClass
 {
 	public var someSuperProperty:Int;
 
 	public function new()
 	{
+		super();
 		someSuperProperty = 1;
 	}
 
-	public function someMethod()
+	public function someMethod(a:Int)
 	{
-		someSuperProperty *= -1;
+		someSuperProperty = a;
+	}
+}
+
+class SomeSuperDooperClass
+{
+	public function new()
+	{
+		
 	}
 }

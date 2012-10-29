@@ -25,23 +25,27 @@ class Macros
 			case TEnum(t, params): return t.toString();
 			default: throw "type not implemented.";
 		}
-
 		return null;
 	}
 
 	/**
 	Qualifies the contents of a TPath ComplexType to ensure that the reference
-	is fully qualified.
+	is fully qualified (when)
 	*/
 	public static function qualifyComplexTypePath(complexType:ComplexType):ComplexType
 	{
+		// trace(complexType);
 		if(complexType != null)
 		{
 			switch(complexType.toType())
 			{
 				case Success(type):
-					trace(type);
-					return type.toComplex(true);
+					switch(type)
+					{
+						case TDynamic(a): return complexType;
+						default: return type.toComplex(true);
+					}
+					
 				case Failure(f): throw f;
 			}
 		}

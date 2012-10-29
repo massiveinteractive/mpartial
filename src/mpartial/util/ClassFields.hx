@@ -82,7 +82,11 @@ class ClassFields
 
 			if(fieldHash.exists(field.name))
 			{
-				Context.error("MPartial does not support partials fragments with super classes.", Context.currentPos());
+				//Context.error("MPartial does not support partials fragments with super classes.", Context.currentPos());
+				
+				var superField = fieldHash.get(field.name);
+				field = appendSuperConstructor(field, superField);
+				
 			}
 			fieldHash.set(field.name, field);
 		}
@@ -90,7 +94,72 @@ class ClassFields
 		return Lambda.array(fieldHash);
 	}
 
-	
+	/*
+	Replaces the call to super() with the contents of the super constructor
+	*/
+	static function appendSuperConstructor(field:Field, superField:Field):Field
+	{
+		trace(Printer.printField("", field));
+		trace(Printer.printField("", superField));
+
+		var fieldExprs:Array<Expr> = [];
+		var superFunction:Function = null;
+
+		switch(field.kind)
+		{
+			case FFun(f):
+				fieldExprs = toExprArray(f.expr);
+			default:null;
+		}
+
+		switch(superField.kind)
+		{
+			case FFun(f):
+				superFunction = f;
+			default:null;
+		}
+
+		for(expr in fieldExprs)
+		{
+			trace(expr.expr);
+			switch(expr.expr)
+			{
+				case ECall(e, params):
+					switch(e.expr)
+					{
+						case EConst(c):
+							switch(c)
+							{
+								case CIdent(s):
+									if(s == "super")
+									{
+										//replace
+										var eSuperfunc = EFunction(null, superFunction).at();
+										var eSuperVar = "superCall".define(eSuperfunc);
+										fieldExprs.unshift(eSuperVar);
+										expr.expr  = ECall(EConst(CIdent("superCall")).at(), params);
+									}
+								default:null;
+							}
+						default:null;
+					}
+				default:null;
+			}
+		}
+
+		trace(Printer.printField("", field));
+		
+		return field;
+	}
+
+	static function toExprArray(expr:Expr):Array<Expr>
+	{
+		switch(expr.expr)
+		{
+			case EBlock(exprs): return exprs;
+			default: return [expr];
+		}
+	}
 		/**
 	Replaces abstract types (T, TData, etc) with concrete ones
 	*/

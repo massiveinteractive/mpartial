@@ -3,32 +3,23 @@
 -lib munit
 -lib hamcrest
 -lib mconsole
+-lib tink_macros
 -cp src
-
+--macro mpartial.PartialsMacro.append(['platform'])
 -cp test
 -swf-version 9
 -swf bin/test/as3_test.swf
 
 --next
 
-## Flash 8
--main TestMain
--lib munit
--lib hamcrest
--lib mconsole
--cp src
-
--cp test
--swf-version 8
--swf bin/test/as2_test.swf
-
---next
 
 ## JavaScript
 -main TestMain
 -lib munit
 -lib hamcrest
 -lib mconsole
+-lib tink_macros
+--macro mpartial.PartialsMacro.append(['platform'])
 -cp src
 
 -cp test
@@ -41,6 +32,8 @@
 -lib munit
 -lib hamcrest
 -lib mconsole
+-lib tink_macros
+--macro mpartial.PartialsMacro.append(['platform'])
 -cp src
 
 -cp test
@@ -49,13 +42,15 @@
 --next
 
 ## CPP
--main TestMain
--lib munit
--lib hamcrest
--lib mconsole
--cp src
+# -main TestMain
+# -lib munit
+# -lib hamcrest
+# -lib mconsole
+# -lib tink_macros
+# -cp src
+--macro mpartial.PartialsMacro.append(['platform'])
 
--cp test
--cpp bin/test/cpp_test
+# -cp test
+# -cpp bin/test/cpp_test
 
 

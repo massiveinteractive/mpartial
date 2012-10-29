@@ -56,7 +56,6 @@
 -cp src
 
 -cp test
-#-D HXCPP_M64
 -cpp bin/test/cpp_test
 
 

@@ -7,6 +7,6 @@ class SomeFragment implements mpartial.PartialFragment
 	@:partialAppend
 	public function new()
 	{
-		someFragmentProperty = property.split("").join("_");
+		someFragmentProperty = property + "Fragment";
 	}
 }

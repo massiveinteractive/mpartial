@@ -92,7 +92,6 @@ class PlatformFragmentTest
 		verifyArrays(expected, example.values);
 	}
 
-
 	@Test
 	public function should_have_someProperty():Void
 	{
@@ -102,16 +101,21 @@ class PlatformFragmentTest
 	@Test
 	public function should_have_someFragmentProperty():Void
 	{
-		Assert.areEqual("p_r_o_p_e_r_t_y", example.someFragmentProperty);
+		Assert.areEqual("propertyFragment", example.someFragmentProperty);
 	}
 
-	// @Test
-	// public function should_have_someSuperProperty():Void
-	// {
-	// 	Assert.areEqual(2, example.someSuperProperty);
-	// }
+	@Test
+	public function should_have_someSuperProperty():Void
+	{
+		Assert.areEqual(2, example.someSuperProperty);
+	}
 
-
+	@Test
+	public function should_call_someSuperMethod():Void
+	{
+		example.someMethod(2);
+		Assert.areEqual(12, example.someSuperProperty);
+	}
 
 	function verifyArrays(expected:Array<String>, actual:Array<String>, ?pos:haxe.PosInfos)
 	{

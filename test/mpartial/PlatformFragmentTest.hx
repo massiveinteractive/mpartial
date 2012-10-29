@@ -99,11 +99,17 @@ class PlatformFragmentTest
 		Assert.areEqual(1, example.someProperty);
 	}
 
-		@Test
+	@Test
 	public function should_have_someFragmentProperty():Void
 	{
 		Assert.areEqual("p_r_o_p_e_r_t_y", example.someFragmentProperty);
 	}
+
+	// @Test
+	// public function should_have_someSuperProperty():Void
+	// {
+	// 	Assert.areEqual(2, example.someSuperProperty);
+	// }
 
 
 

@@ -6,6 +6,8 @@ class SomeClass
 
 	public function new()
 	{
+
 		someProperty = 1;
 	}
+
 }

@@ -27,11 +27,21 @@ class ClassFields
 {
 	@:extern static inline var PRETTY = true;
 
+	static var count:Int=0;
+
 	/**
 	Recursively aggregates fields from class and super classes, ensuring that
 	inherited/overriden fields take precidence.
+
+	@param c 				classType to convert to fields
+	@param paramTypes 		typed paramaters for the current classType
+	@param fieldHash 		cache of current super fields (optional)
+	@param includeStatics 	indicates whether static fields should also be copied
+	@param flattenSupers 	indicates whether calls to super() and super.xxx()
+							should be flattened in the generated fields
+
 	*/
-	public static function getClassFields(c:ClassType, ?includeStatics:Bool=false, ?paramTypes:Array<Type>, ?fieldHash:Hash<Field>):Array<Field>
+	public static function getClassFields(c:ClassType, ?paramTypes:Array<Type>, ?fieldHash:Hash<Field>, ?includeStatics:Bool=false, ?flattenSupers:Bool = true):Array<Field>
 	{
 		if(paramTypes == null) paramTypes = [];
 		if(fieldHash == null) fieldHash = new Hash();
@@ -53,7 +63,7 @@ class ClassFields
 			var superParams = replaceParamTypeArray( type.params, paramMap);
 
 			trace("     superParams: " + superParams);
-			var superFields = getClassFields(type.t.get(), includeStatics, superParams, fieldHash);
+			var superFields = getClassFields(type.t.get(), superParams, fieldHash, includeStatics, flattenSupers);
 
 			for(field in superFields)
 			{
@@ -64,6 +74,14 @@ class ClassFields
 		for(classField in c.fields.get())
 		{
 			var field = getClassField(classField, paramMap);
+			if(fieldHash.exists(field.name))
+			{
+				if(flattenSupers)
+					field = mergeSuperField(field, fieldHash.get(field.name));
+				else
+					Context.error("MPartial does not support partials fragments with super classes.", Context.currentPos());
+			}
+
 			fieldHash.set(field.name, field);
 		}
 
@@ -82,7 +100,10 @@ class ClassFields
 
 			if(fieldHash.exists(field.name))
 			{
-				Context.error("MPartial does not support partials fragments with super classes.", Context.currentPos());
+				if(flattenSupers)
+					field = mergeSuperField(field, fieldHash.get(field.name), true);
+				else
+					Context.error("MPartial does not support partials fragments with super classes.", Context.currentPos());
 			}
 			fieldHash.set(field.name, field);
 		}
@@ -90,7 +111,120 @@ class ClassFields
 		return Lambda.array(fieldHash);
 	}
 
+	/*
+	Replaces the calls to super with the contents of the super constructor
+	*/
+	static function mergeSuperField(field:Field, superField:Field, ?isConstructor:Bool=false):Field
+	{
+		field.access.remove(AOverride);
+
+		// trace(Printer.printField("", field));
+		// trace(Printer.printField("", superField));
+
+		var fieldExprs:Array<Expr> = [];
+		var superFunction:Function = null;
+
+		switch(field.kind)
+		{
+			case FFun(f):
+				fieldExprs = toExprArray(f.expr);
+			default:null;
+		}
+
+		switch(superField.kind)
+		{
+			case FFun(f):
+				superFunction = f;
+			default:null;
+		}
+
+		if(isConstructor)
+			replaceSuperInConstructor(fieldExprs, superFunction);
+		else
+			replaceSuperInField(fieldExprs, superFunction);
+
+		trace(Printer.printField("", field));
+		
+		return field;
+
+	}
 	
+	static function replaceSuperInConstructor(fieldExprs:Array<Expr>, superFunction:Function)
+	{
+		for(expr in fieldExprs)
+		{
+			switch(expr.expr)
+			{
+				case ECall(e, params):
+					switch(e.expr)
+					{
+						case EConst(c):
+							switch(c)
+							{
+								case CIdent(s):
+									if(s == "super")
+									{
+										//replace
+										var eSuperfunc = EFunction(null, superFunction).at();
+										var varName = "super_temp" + count++;
+										var eSuperVar = varName.define(eSuperfunc);
+										fieldExprs.unshift(eSuperVar);
+										expr.expr  = ECall(EConst(CIdent(varName)).at(), params);
+									}
+								default:null;
+							}
+						default:null;
+					}
+				default:null;
+			}
+		}
+	}
+
+	static function replaceSuperInField(fieldExprs:Array<Expr>, superFunction:Function)
+	{
+		for(expr in fieldExprs)
+		{
+			switch(expr.expr)
+			{
+				case ECall(ecall, params):
+
+					switch(ecall.expr)
+					{
+						case EField(e, name):
+							switch(e.expr)
+							{
+								case EConst(c):
+									switch(c)
+									{
+										case CIdent(s):
+											if(s == "super")
+											{
+												//replace
+												var eSuperfunc = EFunction(null, superFunction).at();
+												var varName = "super_temp" + count++;
+												var eSuperVar = varName.define(eSuperfunc);
+												fieldExprs.unshift(eSuperVar);
+												expr.expr  = ECall(EConst(CIdent(varName)).at(), params);
+											}
+										default:null;
+									}
+								default:null;
+							}
+						default:null;
+					}
+				default:null;
+			}
+		}
+	}
+
+	static function toExprArray(expr:Expr):Array<Expr>
+	{
+		switch(expr.expr)
+		{
+			case EBlock(exprs): return exprs;
+			default: return [expr];
+		}
+	}
 		/**
 	Replaces abstract types (T, TData, etc) with concrete ones
 	*/

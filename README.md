@@ -56,10 +56,9 @@ There are several ways to configure partials:
 **Current Limitations:**
 
 1. Fragments must be located in separate module (file) from the Partial target.
-2. An existing or fragment class cannot extend another class (i.e. have a super class). This limitation may be lifted in the future
-3. The target class will not inherit and Interfaces/ super classes defined in a fragment class.
+1. The target class will not inherit and Interfaces/ super classes defined in a fragment class.
 (limitation of Haxe's macro/compiler lifecyle)
-4. The use of 'using' within fragments may not be supported
+1. The use of 'using' within fragments may not be supported
 
 
 ## Usage Guide
@@ -123,19 +122,26 @@ This will append the 'foo' fragment after the platform fragment
 
 Partial fragments can also be configured via metadata.
 
-	@:partials(SomeFragment, SomeOtherFragment)
+	@:partials(SomeClass, SomeOtherFragment)
 	class Example implements mpartial.Partial
 	{
 		//partial target class
 	}
 
 Fragments configured via metadata do not need to conform to the naming convention
-of platform/flag fragments. Any existing (valid) class (that doesn't have any inheritance)
-can be used as a fragment.
+of platform/flag fragments. Any existing (valid) class can be used as a fragment.
 
-	class SomeFragment
+	class SomeClass
 	{
 		//copies fields into any partial targets
+	}
+
+Fragment classes with their own inheritance chain are supported, however the
+generated class will not extend these base classes. Use with caution!
+	
+	class SomeClass extends SomeSuperClass
+	{
+		//will flatten out all super calls in the generated fields
 	}
 
 If a fragment is not a valid class in it's own right (may reference
@@ -147,8 +153,6 @@ PartialFragment. This prevents the file from being compiled directly.
 		//copies fields into any partial targets and
 		//removes module from further compilation
 	}
-
-
 
 ## Method Metadata
 

@@ -42,15 +42,15 @@
 --next
 
 ## CPP
-# -main TestMain
-# -lib munit
-# -lib hamcrest
-# -lib mconsole
-# -lib tink_macros
-# -cp src
+-main TestMain
+-lib munit
+-lib hamcrest
+-lib mconsole
+-lib tink_macros
+-cp src
 --macro mpartial.PartialsMacro.append(['platform'])
 
-# -cp test
-# -cpp bin/test/cpp_test
+-cp test
+-cpp bin/test/cpp_test
 
 

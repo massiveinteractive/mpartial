@@ -212,8 +212,7 @@ class PartialClassParser extends ClassParser
 
 	@param name 	qualified (or unqualified) name of a class
 	*/
-	
-	function compilePartialFragment(name:String)
+	function compilePartialFragment(name:String, ?isTargetFragment:Bool=false)
 	{
 		trace("fragment", name);
 		var type:Type = null;
@@ -232,12 +231,14 @@ class PartialClassParser extends ClassParser
 			{
 				if(!classMap.exists(name))
 				{
-					 throw "unsupported @:partials argument [" + name + "]";
+					if(isTargetFragment)
+						throw "unsupported partial target [" + name + "]\n" + e;
+					else
+						throw "unsupported @:partial argument [" + name + "]\n" + e;
 				}
 			}
 		}
 
-		trace(type);
 
 		if(classMap.exists(name))
 		{
@@ -292,9 +293,9 @@ class PartialClassParser extends ClassParser
 							hasTargetPartials = true;
 
 							var targetClass = id + "_" + target;
-
+							trace(targetClass);
 							Compiler.addMetadata("@:build(mpartial.PartialsMacro.fragment())", targetClass);
-							compilePartialFragment(targetClass);
+							compilePartialFragment(targetClass, true);
 							continue;		
 						}
 					}

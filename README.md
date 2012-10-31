@@ -15,7 +15,7 @@ Install mpartial from haxelib:
 
 Or if you want to install the latest directly from github:
 
-	haxelib git mpartial https://github.com/massiveinteractive/mpartial.git src/lib
+	haxelib git mpartial https://github.com/massiveinteractive/mpartial.git src
 
 And to point to your local fork:
 

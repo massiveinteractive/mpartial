@@ -45,6 +45,7 @@ class ClassParser extends TypeParser
 	public var memberName(default, set_memberName):String;
 
 	public var fields:Array<Field>;
+	public var metadata:Metadata;
 
 	public function new(?type:Type)
 	{
@@ -61,6 +62,10 @@ class ClassParser extends TypeParser
 
 		if(id == null)
 			trace("warning", "unsupported type", type);
+
+		if(classType != null)
+			metadata = classType.meta.get();
+
 		
 	}
 

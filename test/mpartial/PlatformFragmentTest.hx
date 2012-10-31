@@ -2,6 +2,9 @@ package mpartial;
 
 import massive.munit.Assert;
 import massive.munit.async.AsyncFactory;
+import example.Example;
+import example.SubExample;
+
 
 /**
 * Auto generated ExampleTest for MassiveUnit. 
@@ -10,7 +13,7 @@ import massive.munit.async.AsyncFactory;
 */
 class PlatformFragmentTest 
 {
-	var example:example.Example;
+	var instance:Example;
 	var flag:String;
 	var target:String;
 
@@ -33,9 +36,9 @@ class PlatformFragmentTest
 	public function setup():Void
 	{
 		flag = "platform";
-		example = new example.SubExample();
+		instance = new SubExample();
 
-		target = example.target;
+		target = instance.target;
 	}
 	
 	@After
@@ -47,74 +50,74 @@ class PlatformFragmentTest
 	@Test
 	public function should_append():Void
 	{
-		example.append();
+		instance.append();
 		var expected = ["one", "two", "three", flag, target];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_replace():Void
 	{
-		example.replace();
+		instance.replace();
 		var expected = [target];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_insertBefore():Void
 	{
-		example.insertBefore();
+		instance.insertBefore();
 		var expected = [target, flag, "one", "two", "three"];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_insertAfterFirst():Void
 	{
-		example.insertAfterFirst();
+		instance.insertAfterFirst();
 		var expected = ["one", target, flag, "two", "three"];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_insertBeforeLast():Void
 	{
-		example.insertBeforeLast();
+		instance.insertBeforeLast();
 		var expected = ["one", "two", flag, target, "three"];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_inlined():Void
 	{
-		example.inlined();
+		instance.inlined();
 		var expected = ["inline"];
-		verifyArrays(expected, example.values);
+		verifyArrays(expected, instance.values);
 	}
 
 	@Test
 	public function should_have_someProperty():Void
 	{
-		Assert.areEqual(1, example.someProperty);
+		Assert.areEqual(1, instance.someProperty);
 	}
 
 	@Test
 	public function should_have_someFragmentProperty():Void
 	{
-		Assert.areEqual("propertyFragment", example.someFragmentProperty);
+		Assert.areEqual("propertyFragment", instance.someFragmentProperty);
 	}
 
 	@Test
 	public function should_have_someSuperProperty():Void
 	{
-		Assert.areEqual(2, example.someSuperProperty);
+		Assert.areEqual(2, instance.someSuperProperty);
 	}
 
 	@Test
 	public function should_call_someSuperMethod():Void
 	{
-		example.someMethod(2);
-		Assert.areEqual(12, example.someSuperProperty);
+		instance.someMethod(2);
+		Assert.areEqual(12, instance.someSuperProperty);
 	}
 
 	function verifyArrays(expected:Array<String>, actual:Array<String>, ?pos:haxe.PosInfos)
@@ -128,6 +131,17 @@ class PlatformFragmentTest
 
 		if(expected.length != actual.length)
 			Assert.fail("Expected length [" + expected.length + "], actual [" + actual.length + "]", pos);
+	}
+
+	@Test
+	public function should_have_fragment_class_metadata():Void
+	{
+		var m = haxe.rtti.Meta.getType(Example);
+		trace(m);
+
+		Assert.isTrue(Reflect.hasField(m, "platformMeta"));
+		Assert.isTrue(Reflect.hasField(m, "someFragmentMeta"));
+		Assert.isTrue(Reflect.hasField(m, "someClassMeta"));
 	}
 
 }

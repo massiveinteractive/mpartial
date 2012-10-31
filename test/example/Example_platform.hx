@@ -1,5 +1,6 @@
 package example;
 
+@platformMeta
 class Example_platform
 {
 	@:partialReplace

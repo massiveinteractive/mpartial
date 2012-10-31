@@ -1,3 +1,6 @@
+1.2.1
+- added support for class level metadata in fragments (excluding :autoBuild)
+
 1.2.0
 - added support for fragments that are clases with their own inheritance chain
 - fixed issue with dynamic args being being incorrectly typed in generated field

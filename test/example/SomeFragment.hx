@@ -1,5 +1,6 @@
 package example;
 
+@someFragmentMeta
 class SomeFragment implements mpartial.PartialFragment
 {
 	public var someFragmentProperty:String;

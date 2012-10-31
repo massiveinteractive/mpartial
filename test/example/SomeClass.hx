@@ -1,5 +1,6 @@
 package example;
 
+@someClassMeta
 class SomeClass extends SomeSuperClass
 {
 	public var someProperty:Int;

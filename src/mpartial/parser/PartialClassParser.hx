@@ -32,6 +32,7 @@ import haxe.macro.Type;
 import msys.File;
 import msys.Directory;
 import mpartial.util.Macros;
+import tink.macro.tools.Printer;
 import tink.macro.tools.ExprTools;
 
 /**
@@ -66,6 +67,7 @@ class PartialClassParser extends ClassParser
 	public var properties:Hash<PropertyHelper>;
 
 	public var classMap:Hash<Array<Field>>;
+	public var metaMap:Hash<Metadata>;
 
 	var imports:Array<String>;
 
@@ -164,7 +166,7 @@ class PartialClassParser extends ClassParser
 		var types:Array<String> = [];
 		if(classType.meta.has(":partials"))
 		{
-			for(meta in classType.meta.get())
+			for(meta in metadata)
 			{
 				if(meta.name != ":partials") continue;
 
@@ -239,33 +241,48 @@ class PartialClassParser extends ClassParser
 			}
 		}
 
-
 		if(classMap.exists(name))
 		{
 			//if already cached, then use cached fields
 			var fields = classMap.get(name);
 			appendFields(fields, name);
 
+			appendFragmentMetas(metaMap.get(name), name);
 			Context.registerModuleDependency(id, name);
 		}
 		else
 		{
-
 			var parser = new ExistingClassParser(type);
+			var fields:Array<Field> = null;
+			var meta:Metadata = null;
 
-			var fields = classMap.exists(parser.id) ? classMap.get(parser.id) : parser.getFields();
+			if(classMap.exists(parser.id))
+			{
+				fields = classMap.get(parser.id);
+				meta = metaMap.get(parser.id);
+			} 
+			else
+			{
+				fields = parser.getFields();
+				meta = parser.metadata;
+			}
 
 			classMap.set(name, fields);
+			metaMap.set(name, meta);
 
 			if(name != parser.id)
+			{	
 				classMap.set(parser.id, fields);
-
+				metaMap.set(parser.id, meta);
+			}
+				
 			appendFields(fields, parser.id);
+
+			appendFragmentMetas(metaMap.get(parser.id), parser.id);
 
 			Context.registerModuleDependency(id, parser.id);
 		}
 	}
-
 
 	function compileTargetPartials(targets:Array<String>)
 	{
@@ -304,6 +321,25 @@ class PartialClassParser extends ClassParser
 		}
 	}
 
+	/**
+	Appends the metadata of a fragment to the current class
+	*/
+	function appendFragmentMetas(metas:Metadata, fragmentName:String)
+	{
+		if(metas == null) return;
+		for(m in metas)
+		{
+			var paramString = Printer.printExprList("", m.params);
+
+			if(m.name == ":autoBuild")
+				continue;
+			if(m.name == ":build" && paramString == "(mpartial.PartialsMacro.fragment())")
+				continue;
+
+			trace("copying meta from " + fragmentName + " :" + m.name + " : " + paramString);
+			classType.meta.add(m.name, m.params, m.pos);
+		}
+	}
 
 	// ------------------------------------------------------------------------- Append Fields
 

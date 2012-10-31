@@ -63,6 +63,11 @@ class PartialsMacro
 	*/
 	static var classMap:Hash<Array<Field>> = new Hash();
 
+	/**
+	hash of already parsed class fields
+	*/
+	static var metaMap:Hash<Metadata> = new Hash();
+
 
 	/**
 	Configure macro to include specific partial implementations.
@@ -237,8 +242,10 @@ class PartialsMacro
 		}
 		
 		parser.classMap = classMap;
+		parser.metaMap = metaMap;
 		parser.build(targets);
 		classMap.set(parser.id, parser.fields);
+		metaMap.set(parser.id, parser.metadata);
 		return parser.fields;
 	}
 
@@ -256,7 +263,11 @@ class PartialsMacro
 		var parser = new FragmentClassParser();
 
 		if(!classMap.exists(parser.id))
+		{
 			classMap.set(parser.id, parser.getFields());
+			metaMap.set(parser.id, parser.metadata);
+		}
+			
 
 		Compiler.exclude(parser.id, false);
 		return [];

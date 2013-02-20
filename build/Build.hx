@@ -34,7 +34,7 @@ class Build extends mtask.core.BuildBase
 	{
 		target.url = "http://github.com/massiveinteractive/mpartial";
 		target.description = "A Haxe macro library for working with Partials. Supports AVM1, AVM2, JavaScript, Neko and C++.";
-		target.versionDescription = "Added support for class level @metadata in partial fragments";
+		target.versionDescription = "Fixed file path of temp files on windows";
 
 		target.addTag("macro");
 		target.addTag("cross");
@@ -49,6 +49,12 @@ class Build extends mtask.core.BuildBase
 		{
 			rm("src/haxelib.xml");
 			cp("src/*", path);
+		}
+
+
+		target.afterCompile = function(path)
+		{
+			cp("bin/release/haxelib/haxelib.xml", "src/haxelib.xml");
 		}
 	}
 

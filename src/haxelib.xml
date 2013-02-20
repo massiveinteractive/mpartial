@@ -1,7 +1,7 @@
 <project name="mpartial" url="http://github.com/massiveinteractive/mpartial" license="MIT">
-	<user name="massive"/>
+	<user name="default.user"/>
 	<description><![CDATA[A Haxe macro library for working with Partials. Supports AVM1, AVM2, JavaScript, Neko and C++.]]></description>
-	<version name="1.2.1"><![CDATA[Added support for class level @metadata in partial fragments]]></version>
+	<version name="1.2.2"><![CDATA[Fixed file path of temp files on windows]]></version>
 	<depends name="mconsole"/>
 	<depends name="tink_macros"/>
 	<tag v="macro"/>

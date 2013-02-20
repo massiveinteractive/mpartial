@@ -1,9 +1,13 @@
 {
 	"name":"MPartial",
-	"version":"1.2.1",
+	"version":"1.2.2",
 	"id":"mpartial",
 	"dependencies":
 	{
 		"mconsole":"1.x"
+	},
+	"haxelib":
+	{
+		"user": "massive"
 	}
 }

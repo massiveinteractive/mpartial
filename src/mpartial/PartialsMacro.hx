@@ -177,18 +177,20 @@ class PartialsMacro
 
 	static function createTempDirectory()
 	{
-		var temp = TEMP_DIR.split("/");
+		var parts = TEMP_DIR.split("/");
 
 		var path = "";
 		
-		while(temp.length > 0)
+		while(parts.length > 0)
 		{	
-			var part = temp.shift();
-			if(part == "" && temp.length == 0) break;
+			var part = parts.shift();
+			if(part == "" && parts.length == 0) break;
 
-			path += part + "/";
+			path += part;
 
 			if(!FileSystem.exists(path)) FileSystem.createDirectory(path);
+
+			path += "/";
 		}
 	}
 

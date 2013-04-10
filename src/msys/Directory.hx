@@ -10,10 +10,6 @@ import neko.Lib;
 using msys.File;
 // using mcore.util.Arrays;
 
-#if !haxe_209
-import neko.Sys;
-#end
-
 class Directory
 {
 	/**

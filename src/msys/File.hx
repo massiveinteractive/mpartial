@@ -8,10 +8,6 @@ import sys.io.FileOutput;
 import haxe.io.Bytes;
 import neko.Lib;
 
-#if !haxe_209
-import neko.Sys;
-#end
-
 // using mcore.util.Arrays;
 
 class File

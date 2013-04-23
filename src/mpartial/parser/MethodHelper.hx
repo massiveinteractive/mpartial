@@ -84,38 +84,34 @@ class MethodHelper extends MemberHelper
 		if(meta == null) return;
 		for (item in meta)
 		{
-			switch(item.name.toLowerCase())
+			var name = item.name.toLowerCase();
+			if (name == META_APPEND.toLowerCase()) isAppend = true;
+			else if (name == META_FINAL.toLowerCase()) isFinal = true;
+			else if (name == META_REPLACE.toLowerCase()) isReplace = true;
+			else if (name == META_INLINED.toLowerCase()) isInlined = true;
+			else if (name == META_INSERT_AT.toLowerCase())
 			{
-				case META_APPEND.toLowerCase(): isAppend = true;
-				case META_FINAL.toLowerCase(): isFinal = true;
-				case META_REPLACE.toLowerCase(): isReplace = true;
-				case META_INLINED.toLowerCase(): isInlined = true;
-				case META_INSERT_AT.toLowerCase():
+				switch(item.params[0].expr)
 				{
-					switch(item.params[0].expr)
+					case EConst(c):
 					{
-						case EConst(c):
+						switch(c)
 						{
-							switch(c)
+							case CInt(v):
 							{
-								case CInt(v):
-								{
-									insertAt = Std.parseInt(v);
-								}
-								default:
-								{
-									invalidMetadata(item.name);
-								}
+								insertAt = Std.parseInt(v);
+							}
+							default:
+							{
+								invalidMetadata(item.name);
 							}
 						}
-						default:
-						{
-							invalidMetadata(item.name);
-						}
 					}
-
+					default:
+					{
+						invalidMetadata(item.name);
+					}
 				}
-					
 			}
 		}
 

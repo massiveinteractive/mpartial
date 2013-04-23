@@ -10,7 +10,12 @@
 		},
 		"dependencies": 
 		{
-			"mconsole": "1.x"
+			"mconsole": "1.x",
+			"msys": "feature/haxe-3"
+		},
+		"devDependencies":
+		{
+			"mtask": "haxe3"
 		}
 	}
 }

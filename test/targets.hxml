@@ -9,6 +9,7 @@
 -cp test
 -swf-version 9
 -swf bin/test/as3_test.swf
+-D no-unused-var-warnings
 
 --next
 
@@ -24,6 +25,7 @@
 
 -cp test
 -js bin/test/js_test.js
+-D no-unused-var-warnings
 
 --next
 
@@ -38,6 +40,7 @@
 
 -cp test
 -neko bin/test/neko_test.n
+-D no-unused-var-warnings
 
 --next
 
@@ -52,5 +55,5 @@
 
 -cp test
 -cpp bin/test/cpp_test
-
+-D no-unused-var-warnings
 

@@ -123,10 +123,10 @@ class RecursiveExprParser
 				//e.g. new Foo();
 				params = parseExprArray(params);
 				expr.expr = ENew(t, params);
-			case EType(e, field):
-				//e.g. Foo.bar;
-				e = parseExpr(e);
-				expr.expr = EType(e, field);
+			// case EType(e, field):
+			// 	//e.g. Foo.bar;
+			// 	e = parseExpr(e);
+			// 	expr.expr = EType(e, field);
 			case ECall(e, params):
 				//e.g. method(); 
 				e = parseExpr(e);
@@ -199,7 +199,7 @@ class RecursiveExprParser
 		expr.expr = EIf(econd, eif, eelse);
 	}
 
-	function parseESwitch(expr:Expr, e:Expr, cases: Array<{ values : Array<Expr>, expr : Expr }>, edef:Null<Expr>)
+	function parseESwitch(expr:Expr, e:Expr, cases:Array<Case>, edef:Null<Expr>)
 	{
 		e = parseExpr(e);
 

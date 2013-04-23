@@ -35,6 +35,11 @@ import haxe.PosInfos;
 import sys.io.File;
 import sys.FileSystem;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
 
 class PartialsMacro
 {
@@ -61,12 +66,12 @@ class PartialsMacro
 	/**
 	hash of already parsed class fields
 	*/
-	static var classMap:Hash<Array<Field>> = new Hash();
+	static var classMap = new StringMap<Array<Field>>();
 
 	/**
 	hash of already parsed class fields
 	*/
-	static var metaMap:Hash<Metadata> = new Hash();
+	static var metaMap = new StringMap<Metadata>();
 
 
 	/**
@@ -223,7 +228,7 @@ class PartialsMacro
 	/**
 	Build macro called by mpartial.Partial interface
 	*/
-	@:macro public static function build(?fields:Array<Field>):Array<Field>
+	macro public static function build(?fields:Array<Field>):Array<Field>
 	{
 		return createPartialClass(fields);
 	}
@@ -258,7 +263,7 @@ class PartialsMacro
 
 	@returns empty field array
 	*/
-	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
+	macro public static function fragment(?fields:Array<Field>):Array<Field>
 	{
 		init();
 		

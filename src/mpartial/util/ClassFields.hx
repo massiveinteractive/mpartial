@@ -13,6 +13,11 @@ using tink.macro.tools.MacroTools;
 using tink.macro.tools.ExprTools;
 using tink.macro.tools.Printer;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
 
 typedef ParamDeclaration = 
 {
@@ -41,10 +46,10 @@ class ClassFields
 							should be flattened in the generated fields
 
 	*/
-	public static function getClassFields(c:ClassType, ?paramTypes:Array<Type>, ?fieldHash:Hash<Field>, ?includeStatics:Bool=false, ?flattenSupers:Bool = true):Array<Field>
+	public static function getClassFields(c:ClassType, ?paramTypes:Array<Type>, ?fieldHash:StringMap<Field>, ?includeStatics:Bool=false, ?flattenSupers:Bool = true):Array<Field>
 	{
 		if(paramTypes == null) paramTypes = [];
-		if(fieldHash == null) fieldHash = new Hash();
+		if(fieldHash == null) fieldHash = new StringMap();
 
 		trace(c.name + ":" + paramTypes);
 
@@ -436,7 +441,7 @@ class ClassFields
 			case AccNever: "never";
 			case AccCall(m): m;
 			case AccResolve: throw "not implemented for VarAccess [" + access + "]";
-			#if haxe_211
+			#if haxe3
 			case AccRequire(r,msg): throw "not implemented VarAccess [" + access + "]";
 			#else
 			case AccRequire(r): throw "not implemented VarAccess [" + access + "]";

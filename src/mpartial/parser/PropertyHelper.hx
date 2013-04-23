@@ -127,11 +127,9 @@ class PropertyHelper extends MemberHelper
 		
 		for (item in meta)
 		{
-			switch(item.name.toLowerCase())
-			{
-				case META_FINAL.toLowerCase(): isFinal = true;
-				case META_REPLACE.toLowerCase(): isReplace = true;
-			}
+			var name = item.name.toLowerCase();
+			if (name == META_FINAL.toLowerCase()) isFinal = true;
+			else if (name == META_REPLACE.toLowerCase()) isReplace = true;
 		}
 
 		hasPartialImplementationMetadata = isReplace;

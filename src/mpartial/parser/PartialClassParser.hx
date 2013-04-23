@@ -35,6 +35,12 @@ import mpartial.util.Macros;
 import tink.macro.tools.Printer;
 import tink.macro.tools.ExprTools;
 
+#if haxe3
+import haxe.ds.StringMap;
+#else
+typedef StringMap<T> = Hash<T>;
+#end
+
 /**
 Augments the fields of a <code>Partial</code> class with the fields from one or
 more other classes or <code>PartialFragment</code> classes.
@@ -63,11 +69,11 @@ class PartialClassParser extends ClassParser
 	var metaPartialTypes:Array<String>;
 
 
-	public var methods:Hash<MethodHelper>;
-	public var properties:Hash<PropertyHelper>;
+	public var methods:StringMap<MethodHelper>;
+	public var properties:StringMap<PropertyHelper>;
 
-	public var classMap:Hash<Array<Field>>;
-	public var metaMap:Hash<Metadata>;
+	public var classMap:StringMap<Array<Field>>;
+	public var metaMap:StringMap<Metadata>;
 
 	var imports:Array<String>;
 
@@ -81,8 +87,8 @@ class PartialClassParser extends ClassParser
 
 		hasTargetPartials = false;
 		hasMetaPartials = false;
-		methods = new Hash();
-		properties = new Hash();
+		methods = new StringMap();
+		properties = new StringMap();
 
 
 		//don't care about other interfaces

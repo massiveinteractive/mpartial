@@ -67,7 +67,7 @@ class PlatformFragmentTest
 	public function should_insertBefore():Void
 	{
 		instance.insertBefore();
-		var expected = [target, flag, "one", "two", "three"];
+		var expected = [flag, target, "one", "two", "three"];
 		verifyArrays(expected, instance.values);
 	}
 
@@ -75,7 +75,7 @@ class PlatformFragmentTest
 	public function should_insertAfterFirst():Void
 	{
 		instance.insertAfterFirst();
-		var expected = ["one", target, flag, "two", "three"];
+		var expected = ["one", flag, target, "two", "three"];
 		verifyArrays(expected, instance.values);
 	}
 

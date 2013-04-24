@@ -100,6 +100,12 @@ class TypePaths
 			path2.sub = null;
 		}
 
+		if(!Reflect.hasField(path1, "sub"))
+			path1.sub = null;
+
+		if(!Reflect.hasField(path2, "sub"))
+			path2.sub = null;
+			
 		return Std.string(path1) == Std.string(path2);
 	}
 }

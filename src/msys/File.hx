@@ -1,12 +1,11 @@
 package msys;
 
-#if neko
+#if sys
 
 import sys.FileSystem;
 import sys.io.File;
 import sys.io.FileOutput;
 import haxe.io.Bytes;
-import neko.Lib;
 
 // using mcore.util.Arrays;
 
@@ -378,7 +377,7 @@ class File
 			var directory = haxe.io.Path.directory(toPath);
 			if (!exists(directory)) Directory.create(directory);
 
-			neko.io.File.copy(fromPath, toPath);
+			File.copy(fromPath, toPath);
 		}
 	}
 
@@ -417,7 +416,7 @@ class File
 		path = File.nativePath(path);
 		Console.assert(exists(path), "the file '" + path + "' does not exist.");
 		Console.assert(!isDirectory(path), "the path '" + path + "' is a directory and cannot be read.");
-		return neko.io.File.getContent(path);
+		return sys.io.File.getContent(path);
 	}
 
 	/**
@@ -442,9 +441,9 @@ class File
 		switch(writeMode)
 		{
 			case FileWriteMode.overwrite:
-				out = neko.io.File.write(path, true);
+				out = sys.io.File.write(path, true);
 			case FileWriteMode.append:
-				out = neko.io.File.append(path, true);
+				out = sys.io.File.append(path, true);
 		}
 		out.writeString(content);
 		out.close();

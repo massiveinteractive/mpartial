@@ -1,11 +1,10 @@
 package msys;
 
-#if neko
+#if sys
 
 import sys.FileSystem;
 import sys.io.FileOutput;
 import haxe.io.Bytes;
-import neko.Lib;
 
 using msys.File;
 // using mcore.util.Arrays;

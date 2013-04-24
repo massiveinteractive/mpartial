@@ -234,6 +234,8 @@ class PartialClassParser extends ClassParser
 				type = Context.getType(name);
 				name = Macros.getQualifiedIdFromType(type);
 				type = Context.follow(type);
+
+				trace(type);
 			}
 			catch(e:Dynamic)
 			{
@@ -243,6 +245,10 @@ class PartialClassParser extends ClassParser
 						throw "unsupported partial target [" + name + "]\n" + e;
 					else
 						throw "unsupported @:partial argument [" + name + "]\n" + e;
+				}
+				else
+				{
+					throw e;
 				}
 			}
 		}
@@ -297,19 +303,18 @@ class PartialClassParser extends ClassParser
 		var packagePath = packageName.split(".").join("/");
 		if (packagePath != "") packagePath += "/";
 
-		for (classPath in Context.getClassPath())
+		for(target in targets)
 		{
-			var dir = File.nativePath(classPath + packagePath);
-
-			if ( !File.exists(dir) || !File.isDirectory(dir))
-				continue;
-
-			for (file in Directory.readDirectory(dir))
+			for (classPath in Context.getClassPath())
 			{
-				
-				if (StringTools.endsWith(file, ".hx") )
+				var dir = File.nativePath(classPath + packagePath);
+
+				if ( !File.exists(dir) || !File.isDirectory(dir))
+					continue;
+
+				for (file in Directory.readDirectory(dir))
 				{
-					for (target in targets)
+					if (StringTools.endsWith(file, ".hx") )
 					{
 						if (StringTools.endsWith(file, name + "_" + target + ".hx"))
 						{
@@ -325,6 +330,8 @@ class PartialClassParser extends ClassParser
 				}
 			}
 		}
+
+		
 	}
 
 	/**
@@ -449,6 +456,8 @@ class PartialClassParser extends ClassParser
 
 		if(!areMatchingComplexTypes(prop.type, existingProp.type))
 		{
+			trace(prop.type);
+			trace(existingProp.type);
 			error("Cannot modify property type of " + location + " with @" + PropertyHelper.META_REPLACE, pos);
 		}
 		

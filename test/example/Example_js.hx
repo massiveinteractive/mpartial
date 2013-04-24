@@ -23,7 +23,6 @@ SOFTWARE.
 package example;
 
 import js.Lib;
-import js.Dom;
 import haxe.xml.Fast;
 
 class Example_js

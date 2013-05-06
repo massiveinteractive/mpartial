@@ -171,6 +171,8 @@ class PartialsMacro
 		{
 			targets.push("debug");
 		}
+		
+		targets = removeDuplicates(targets);
 
 		trace("default targets", defaultTargets);
 		trace("custom targets", customTargets);
@@ -221,6 +223,15 @@ class PartialsMacro
 		
 		return targets;
 		
+	}
+	
+	static function removeDuplicates(values:Array<String>):Array<String>
+	{
+		var uniqueValues:Array<String> = [];
+		for (value in values)
+			if (!Lambda.has(uniqueValues, value))
+				uniqueValues.push(value);
+		return uniqueValues;
 	}
 
 	//-------------------------------------------------------------------------- Build macros

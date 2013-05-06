@@ -117,9 +117,9 @@ class FragmentClassParser extends ClassParser
 
 						switch(parentExpr.expr)
 						{
-							case EField(e, field):
+							case EField(_, _):
 								expr.expr = qualifyCIdentEField(id);
-							case EVars(vars):
+							case EVars(_):
 								expr.expr = qualifyCIdentEField(id);
 							default: null;
 

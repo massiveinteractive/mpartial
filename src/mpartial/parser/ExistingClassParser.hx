@@ -34,7 +34,7 @@ class ExistingClassParser extends ClassParser
 		
 		switch (type)
 		{
-			case TInst(t, _):
+			case TInst(_, _):
 				
 				fields = classType.getClassFields();
 

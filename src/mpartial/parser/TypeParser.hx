@@ -27,8 +27,8 @@ class TypeParser
 
 		id = switch(type)
 		{
-			case TInst(t, params):  Std.string(t);
-			case TEnum(t, params): Std.string(t);
+			case TInst(t, _):  Std.string(t);
+			case TEnum(t, _): Std.string(t);
 			default: null;
 		}
 

@@ -201,12 +201,12 @@ class PartialClassParser extends ClassParser
 	    			var method = new MethodHelper(field, f, id);
 					methods.set(field.name, method);
 	    		}
-	    		case FVar(t,e): 
+	    		case FVar(_,_): 
 	    		{
 	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
 	    		}
-	    		case FProp(get,set,t, e): 
+	    		case FProp(_,_,_,_): 
 	    		{
 	    			var property = new PropertyHelper(field, id);
 					properties.set(field.name, property);
@@ -369,15 +369,15 @@ class PartialClassParser extends ClassParser
 	    	{
 	    		case FFun(f):
 	    		{
-	    			appendMethod(field, f,fromId);
+	    			appendMethod(field, f, fromId);
 	    		}
-	    		case FVar(t, e):
+	    		case FVar(_,_):
 	    		{
-	    			appendProperty(field,fromId);
+	    			appendProperty(field, fromId);
 	    		}
-	    		case FProp(get,set,t,e):
+	    		case FProp(_,_,_,_):
 	    		{
-	    			appendProperty(field,fromId);
+	    			appendProperty(field, fromId);
 	    		}
 	    	}
         }
@@ -695,9 +695,9 @@ class PartialClassParser extends ClassParser
 
 	function isEBlock(expr:Expr):Bool
 	{
-		switch(expr.expr)
+		switch (expr.expr)
 		{
-			case EBlock(exprs): return true;
+			case EBlock(_): return true;
 			default: return false;
 		}
 	}
@@ -705,14 +705,13 @@ class PartialClassParser extends ClassParser
 	public function getEBlockExprs(expr:Expr):Array<Expr>
 	{
 		var exprs:Array<Expr> = [];
-		switch(expr.expr)
+		switch (expr.expr)
 		{
 			case EBlock(es): exprs = es;
 			default: exprs = [expr];
 		}
 		return exprs;
 	}
-
 }
 
 #end

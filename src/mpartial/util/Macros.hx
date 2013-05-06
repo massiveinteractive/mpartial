@@ -20,9 +20,9 @@ class Macros
 	{
 		switch(type)
 		{
-			case TInst(t, params): return t.toString();
-			case TType(t, params): return t.toString();
-			case TEnum(t, params): return t.toString();
+			case TInst(t, _): return t.toString();
+			case TType(t, _): return t.toString();
+			case TEnum(t, _): return t.toString();
 			default: throw "type not implemented.";
 		}
 		return null;
@@ -42,7 +42,7 @@ class Macros
 				case Success(type):
 					switch(type)
 					{
-						case TDynamic(a): return complexType;
+						case TDynamic(_): return complexType;
 						default: return type.toComplex(true);
 					}
 					

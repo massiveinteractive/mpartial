@@ -76,12 +76,12 @@ class RecursiveExprParser
 		{
 			case EContinue: null;
 			case EBreak: null;
-			case EConst(c): null;//i.e. any constant (string, type, int, regex, ident (local var ref))
+			case EConst(_): null;//i.e. any constant (string, type, int, regex, ident (local var ref))
 			case EFunction(name, f): 
 				//e.g. var f = function()
 				f = parseFunction(f);
 				expr.expr = EFunction(name, f);
-			case EDisplayNew(t): null;  //no idea what this is??
+			case EDisplayNew(_): null;  //no idea what this is??
 			case EDisplay(e, isCall):
 				//no idea what this is???
 				e = parseExpr(e);
@@ -185,7 +185,7 @@ class RecursiveExprParser
 				//array of expressions e.g. {...}
 				exprs = parseExprArray(exprs);
 				expr.expr = EBlock(exprs);
-			case EUntyped(e1): null;//don't want to mess around with untyped code
+			case EUntyped(_): null;//don't want to mess around with untyped code
 			default: trace(expr.expr);
 		}
 		return expr;

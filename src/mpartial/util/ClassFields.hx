@@ -187,16 +187,16 @@ class ClassFields
 
 	static function replaceSuperInField(fieldExprs:Array<Expr>, superFunction:Function)
 	{
-		for(expr in fieldExprs)
+		for (expr in fieldExprs)
 		{
-			switch(expr.expr)
+			switch (expr.expr)
 			{
 				case ECall(ecall, params):
 
-					switch(ecall.expr)
+					switch (ecall.expr)
 					{
-						case EField(e, name):
-							switch(e.expr)
+						case EField(e, _):
+							switch (e.expr)
 							{
 								case EConst(c):
 									switch(c)
@@ -442,9 +442,9 @@ class ClassFields
 			case AccCall(m): m;
 			case AccResolve: throw "not implemented for VarAccess [" + access + "]";
 			#if haxe3
-			case AccRequire(r,msg): throw "not implemented VarAccess [" + access + "]";
+			case AccRequire(_,_): throw "not implemented VarAccess [" + access + "]";
 			#else
-			case AccRequire(r): throw "not implemented VarAccess [" + access + "]";
+			case AccRequire(_): throw "not implemented VarAccess [" + access + "]";
 			#end
 		}		
 	}
@@ -460,18 +460,18 @@ class ClassFields
 
 		var expr = Context.getTypedExpr(typedExpr);
 
-		switch(classField.kind)
+		switch (classField.kind)
 		{
-			case FMethod(k):
+			case FMethod(_):
 			{
-				switch(expr.expr)
+				switch (expr.expr)
 				{
-					case EFunction(name, f):
+					case EFunction(_, f):
 						return f.expr;
 					default: throw "not implemented for ExprDef [" + expr.expr + "]";//return null;
 				}
 			}
-			case FVar(read, write):
+			case FVar(_,_):
 			{
 				return expr;
 			}

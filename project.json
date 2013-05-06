@@ -12,13 +12,14 @@
 		{
 			"mconsole": ">=1.3.0 < 2.0.0",
 			"msys": ">=1.2.0 <2.0.0",
-			"tink": "master"
+			"tink_macros": "master"
 		},
 		"devDependencies":
 		{
 			"munit": "2.x",
 			"mcover": "2.x",
-			"mtask": "haxe3"
+			"mtask": "haxe3",
+			"hamcrest": ">=1.2.0 <2.0.0"
 		}
 	}
 }

@@ -1,3 +1,7 @@
+1.3.0
+
+Added support for Haxe 3
+
 1.2.2
 
 * fixed issue with temp file paths on windows

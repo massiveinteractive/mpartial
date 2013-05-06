@@ -199,7 +199,11 @@ class RecursiveExprParser
 		expr.expr = EIf(econd, eif, eelse);
 	}
 
+	#if haxe3
 	function parseESwitch(expr:Expr, e:Expr, cases:Array<Case>, edef:Null<Expr>)
+	#else
+	function parseESwitch(expr:Expr, e:Expr, cases:Array<{values:Array<Expr>, expr:Expr }>, edef:Null<Expr>)
+	#end
 	{
 		e = parseExpr(e);
 

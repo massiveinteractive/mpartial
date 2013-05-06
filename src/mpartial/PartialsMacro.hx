@@ -228,7 +228,11 @@ class PartialsMacro
 	/**
 	Build macro called by mpartial.Partial interface
 	*/
+	#if haxe3
 	macro public static function build(?fields:Array<Field>):Array<Field>
+	#else
+	@:macro public static function build(?fields:Array<Field>):Array<Field>
+	#end
 	{
 		return createPartialClass(fields);
 	}
@@ -263,7 +267,11 @@ class PartialsMacro
 
 	@returns empty field array
 	*/
+	#if haxe3
 	macro public static function fragment(?fields:Array<Field>):Array<Field>
+	#else
+	@:macro public static function fragment(?fields:Array<Field>):Array<Field>
+	#end
 	{
 		init();
 		

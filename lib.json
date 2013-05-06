@@ -2,10 +2,10 @@
 	"msignal":"1.2.0",
 	"mlib":"2.0.0",
 	"mcover":"2.0.1",
-	"msys":"b9958df",
-	"mconsole":"182547e",
-	"mcore":"9c89aca",
+	"msys":"1.2.0",
+	"mconsole":"1.3.0",
+	"mcore":"1.2.0",
+	"tink":"fc10c99",
 	"munit":"2.0.0",
-	"mtask":"2e6f98b",
-	"hamcrest":"1.2.0"
+	"mtask":"e12de2a"
 }

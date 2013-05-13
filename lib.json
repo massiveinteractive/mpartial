@@ -1,12 +1,12 @@
 {
 	"msignal":"1.2.0",
-	"mlib":"2.0.0",
-	"mcover":"2.0.1",
+	"mlib":"2.0.1",
+	"mcover":"2.0.2",
 	"msys":"1.2.0",
 	"mconsole":"1.3.0",
-	"mcore":"1.2.0",
-	"tink_macros":"dff0616",
-	"munit":"2.0.0",
-	"mtask":"e12de2a",
-	"hamcrest":"1.2.0"
+	"mcore":"1.3.0",
+	"munit":"2.0.1",
+	"tink_macros":"2.0.0",
+	"hamcrest":"1.2.0",
+	"mtask":"2.0.0-rc1"
 }

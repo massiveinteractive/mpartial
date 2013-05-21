@@ -438,12 +438,13 @@ class ClassFields
 		{
 			case AccNormal, AccInline: "default";
 			case AccNo: "null";
-			case AccNever: "never";
-			case AccCall(m): m;
+			case AccNever: "never";	
 			case AccResolve: throw "not implemented for VarAccess [" + access + "]";
 			#if haxe3
+			case AccCall: throw "not implemented VarAccess [" + access + "]";
 			case AccRequire(_,_): throw "not implemented VarAccess [" + access + "]";
 			#else
+			case AccCall(m): m;
 			case AccRequire(_): throw "not implemented VarAccess [" + access + "]";
 			#end
 		}		

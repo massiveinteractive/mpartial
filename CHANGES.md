@@ -1,22 +1,20 @@
-1.3.0
+1.3.1
+* Added haxelib.json
 
-Added support for Haxe 3
+1.3.0
+* Added support for Haxe 3
 
 1.2.2
-
 * fixed issue with temp file paths on windows
 
 1.2.1
-
 * added support for class level metadata in fragments (excluding :autoBuild)
 
 1.2.0
-
 * added support for fragments that are clases with their own inheritance chain
 * fixed issue with dynamic args being being incorrectly typed in generated field
 
 1.1.0
-
 * added support for partial wiring using @:partial class metadata
 * added PartialFragment interface for incomplete class types
 * added support for using existing classes as partial fragment
@@ -26,11 +24,9 @@ Added support for Haxe 3
 * added example for @:partial configuration
 
 1.0.1
-
 * Hot fix for generating temp directory on new projects
 
 1.0.0
-
 * Implemented Issue #3 changed metadata names from @Partial* to @:partial* to 
   align with Haxe conventions for build metadata
 * Implemented Issue #2 added support for @:partialOverride and @:partialFinal 

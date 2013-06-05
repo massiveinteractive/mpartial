@@ -1,7 +1,7 @@
 <project name="mpartial" url="http://github.com/massiveinteractive/mpartial" license="MIT">
 	<user name="massive"/>
 	<description><![CDATA[A Haxe macro library for working with Partials. Supports AVM1, AVM2, JavaScript, Neko and C++.]]></description>
-	<version name="1.3.1"><![CDATA[Added haxelib.json.]]></version>
+	<version name="1.3.2"><![CDATA[Added haxelib.json.]]></version>
 	<depends name="mconsole"/>
 	<depends name="tink_macros"/>
 	<tag v="macro"/>

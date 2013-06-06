@@ -9,7 +9,7 @@
 	"url": "http://github.com/massiveinteractive/mpartial",
 	"dependencies": 
 	{
-		"tink_macros": "",
-		"mconsole": ""
+		"mconsole": "",
+		"tink_macro": ""
 	}
 }

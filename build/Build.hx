@@ -44,7 +44,7 @@ class Build extends mtask.core.BuildBase
 
 		// target.addDependency("msys");
 		target.addDependency("mconsole");
-		target.addDependency("tink_macros");
+		target.addDependency("tink_macro");
 
 		target.beforeCompile = function(path)
 		{
@@ -54,7 +54,16 @@ class Build extends mtask.core.BuildBase
 
 		target.afterCompile = function(path)
 		{
-			cp("bin/release/haxelib/haxelib.xml", "src/haxelib.xml");
+			// tink_macro was previously named tink_macros pre 3.0 
+			// so update xml descriptor to point at that old version
+			
+			var xmlPath = path + "/haxelib.xml";
+			var content = msys.File.read(xmlPath);
+			
+			content = ~/tink_macro/.replace(content, "tink_macros");
+			msys.File.write(xmlPath, content);
+			
+			cp(xmlPath, "src/haxelib.xml");
 		}
 	}
 

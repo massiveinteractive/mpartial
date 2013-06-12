@@ -1,3 +1,6 @@
+1.3.3
+* Changed tink_macros dependency to tink_macro
+
 1.3.2
 * Added haxelib.json
 

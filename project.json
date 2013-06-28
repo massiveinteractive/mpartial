@@ -2,7 +2,7 @@
 	"project": 
 	{
 		"name": "MPartial",
-		"version": "1.3.3",
+		"version": "2.0.0",
 		"id": "mpartial",
 		"haxelib": 
 		{
@@ -10,9 +10,9 @@
 		},
 		"dependencies": 
 		{
-			"mconsole": ">=1.3 < 2",
+			"mconsole": ">=1.3 <2",
 			"msys": ">=1.2 <2",
-			"tink_macro": "2"
+			"tink_macro": "3.x"
 		},
 		"devDependencies":
 		{

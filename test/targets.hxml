@@ -3,7 +3,7 @@
 -lib munit
 -lib hamcrest
 -lib mconsole
--lib tink_macros
+-lib tink_macro
 -cp src
 --macro mpartial.PartialsMacro.append(['platform'])
 -cp test
@@ -19,7 +19,7 @@
 -lib munit
 -lib hamcrest
 -lib mconsole
--lib tink_macros
+-lib tink_macro
 --macro mpartial.PartialsMacro.append(['platform'])
 -cp src
 
@@ -34,7 +34,7 @@
 -lib munit
 -lib hamcrest
 -lib mconsole
--lib tink_macros
+-lib tink_macro
 --macro mpartial.PartialsMacro.append(['platform'])
 -cp src
 

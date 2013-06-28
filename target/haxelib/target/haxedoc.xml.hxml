@@ -1,7 +1,6 @@
 -neko haxedoc.n
 --no-output
--D macro
 -lib mconsole
--lib tink_macros
+-lib tink_macro
 -cp src
 mpartial.PartialsMacro

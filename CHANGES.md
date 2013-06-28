@@ -1,3 +1,6 @@
+2.0.0
+Major release for Haxe 3 compatability (due to major version bump in tink_macro)
+
 1.3.3
 * Changed tink_macros dependency to tink_macro
 
